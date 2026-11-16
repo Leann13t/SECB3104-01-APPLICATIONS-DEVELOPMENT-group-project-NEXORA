@@ -1,6 +1,7 @@
-
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'core/theme/app_theme.dart';
+import 'screens/main_navigation.dart';
 
 
 const String supabaseUrl =
@@ -41,14 +42,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Nexora',
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Nexora'),
-        ),
-        body: const Center(
-          child: Text('Welcome to Nexora!'),
-        ),
-      ),
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
+      home: const MainNavigation(),
+      routes: {
+        '/main': (context) => const MainNavigation(),
+      },
     );
   }
 }
