@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/theme/app_theme.dart';
 import 'screens/main_navigation.dart';
+import 'splash_page.dart';
 
 
 const String supabaseUrl =
@@ -44,7 +45,7 @@ class MyApp extends StatelessWidget {
       title: 'Nexora',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const MainNavigation(),
+      home: const SplashPage(),
       routes: {
         '/main': (context) => const MainNavigation(),
       },
