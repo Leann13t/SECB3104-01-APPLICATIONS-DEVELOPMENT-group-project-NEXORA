@@ -208,42 +208,6 @@ class SplashPage extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                Positioned(
-                                  left: 258,
-                                  top: -15,
-                                  child: Text(
-                                    '✦',
-                                    style: GoogleFonts.fredoka(
-                                      color: const Color(0xFFFFE9A6),
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  left: 238,
-                                  top: 6,
-                                  child: Text(
-                                    '✦',
-                                    style: GoogleFonts.fredoka(
-                                      color: const Color(0xFFFFE9A6),
-                                      fontSize: 19,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  left: 13,
-                                  top: 15,
-                                  child: Text(
-                                    '✦',
-                                    style: GoogleFonts.fredoka(
-                                      color: const Color(0xFFFFF6D1),
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
                               ],
                             ),
                           ),
