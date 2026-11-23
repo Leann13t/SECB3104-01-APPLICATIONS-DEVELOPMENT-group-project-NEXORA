@@ -142,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  'Discover culture. Collect memories.',
+                  'Discover culture. Explore the world.',
                   style: GoogleFonts.nunito(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
