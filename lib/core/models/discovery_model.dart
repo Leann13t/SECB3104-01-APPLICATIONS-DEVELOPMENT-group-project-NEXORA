@@ -183,15 +183,13 @@ class Discovery {
       title: 'Tan Hiok Nee Cultural Street',
       category: CulturalCategory.heritage,
       location: 'Jalan Tan Hiok Nee, Johor Bahru, Johor, Malaysia',
-      description:
-          'Historic cultural lane in downtown Johor Bahru named after leader Tan Hiok Nee, featuring century-old bakeries, traditional Hainanese coffee shops, and pre-war Chinese shophouses.',
+      description: 'Historic cultural lane in downtown Johor Bahru named after leader Tan Hiok Nee, featuring century-old bakeries, traditional Hainanese coffee shops, and pre-war Chinese shophouses.',
       latitude: 1.4578,
       longitude: 103.7644,
       imageUrl: '', // Empty image link ready for insert image
       isApproved: true,
       contributor: 'Wei Loon Tan',
-      culturalSignificance:
-          'Center of Johor Bahru Chinese diaspora heritage and historical Ngee Heng Kongsi trade history along Sungai Segget.',
+      culturalSignificance: 'Center of Johor Bahru Chinese diaspora heritage and historical Ngee Heng Kongsi trade history along Sungai Segget.',
     ),
     // 2. Johor Bahru, Malaysia (Food)
     Discovery(
@@ -199,15 +197,13 @@ class Discovery {
       title: 'Restoran Hua Mui & Authentic Johor Laksa',
       category: CulturalCategory.food,
       location: 'Jalan Trus, Bandar Johor Bahru, Johor, Malaysia',
-      description:
-          'Iconic heritage café operating since 1946 serving traditional Hainanese chicken chop and royal Johor Laksa made with spaghetti and rich spiced fish gravy.',
+      description: 'Iconic heritage café operating since 1946 serving traditional Hainanese chicken chop and royal Johor Laksa made with spaghetti and rich spiced fish gravy.',
       latitude: 1.4582,
       longitude: 103.7648,
       imageUrl: '', // Empty image link ready for insert image
       isApproved: true,
       contributor: 'Faridah Ahmad',
-      culturalSignificance:
-          'Culinary monument bridging Hainanese migrant cooking with traditional royal Johor Malay banquet recipes.',
+      culturalSignificance: 'Culinary monument bridging Hainanese migrant cooking with traditional royal Johor Malay banquet recipes.',
     ),
     // 3. Johor Bahru, Malaysia (Murals)
     Discovery(
@@ -215,15 +211,13 @@ class Discovery {
       title: 'Pasar Karat Heritage Street Murals',
       category: CulturalCategory.murals,
       location: 'Jalan Segget, Johor Bahru, Johor, Malaysia',
-      description:
-          'Large-scale urban wall paintings illustrating early Gambier and Pepper traders, traditional river boats, and multiracial street life of old Johor.',
+      description: 'Large-scale urban wall paintings illustrating early Gambier and Pepper traders, traditional river boats, and multiracial street life of old Johor.',
       latitude: 1.4589,
       longitude: 103.7635,
       imageUrl: '', // Empty image link ready for insert image
       isApproved: true,
       contributor: 'Suresh Rao',
-      culturalSignificance:
-          'Revitalizing old Johor Bahru riverside alleys through public community storytelling and youth arts.',
+      culturalSignificance: 'Revitalizing old Johor Bahru riverside alleys through public community storytelling and youth arts.',
     ),
     // 4. Johor Bahru, Malaysia (Crafts)
     Discovery(
@@ -231,15 +225,13 @@ class Discovery {
       title: 'Kompleks Kraf Johor (Johor Craft Complex)',
       category: CulturalCategory.crafts,
       location: 'Jalan Cenderasari, Larkin, Johor Bahru, Johor, Malaysia',
-      description:
-          'Dedicated artisan center showcasing authentic Johor songket weaving, copper tooling, wood carving, and traditional Zapin musical instruments.',
+      description: 'Dedicated artisan center showcasing authentic Johor songket weaving, copper tooling, wood carving, and traditional Zapin musical instruments.',
       latitude: 1.4932,
       longitude: 103.7431,
       imageUrl: '', // Empty image link ready for insert image
       isApproved: true,
       contributor: 'Nurul Huda',
-      culturalSignificance:
-          'Preserving ancient Malay royal court weaving and Johor Zapin folk heritage for future generations.',
+      culturalSignificance: 'Preserving ancient Malay royal court weaving and Johor Zapin folk heritage for future generations.',
     ),
     // 5. Global: Rome Colosseum
     Discovery(
@@ -247,15 +239,13 @@ class Discovery {
       title: 'Colosseum',
       category: CulturalCategory.heritage,
       location: 'Piazza del Colosseo, Rome, Italy',
-      description:
-          'An iconic ancient amphitheatre and a symbol of Roman history and culture, completed in 80 AD under Emperor Titus.',
+      description: 'An iconic ancient amphitheatre and a symbol of Roman history and culture, completed in 80 AD under Emperor Titus.',
       latitude: 41.8902,
       longitude: 12.4922,
       imageUrl: '', // Empty image link ready for insert image
       isApproved: true,
       contributor: 'Marco R.',
-      culturalSignificance:
-          'World Heritage marvel symbolizing Roman engineering, imperial spectacles, and civic identity.',
+      culturalSignificance: 'World Heritage marvel symbolizing Roman engineering, imperial spectacles, and civic identity.',
     ),
     // 6. Global: Tokyo Food
     Discovery(
@@ -263,15 +253,13 @@ class Discovery {
       title: 'Tsukiji Ramen & Seafood Alley',
       category: CulturalCategory.food,
       location: 'Chuo City, Tokyo, Japan',
-      description:
-          'Historic food lane featuring century-old broth recipes, fresh sashimi bowls, and artisan tamagoyaki prepared before your eyes.',
+      description: 'Historic food lane featuring century-old broth recipes, fresh sashimi bowls, and artisan tamagoyaki prepared before your eyes.',
       latitude: 35.6655,
       longitude: 139.7708,
       imageUrl: '', // Empty image link ready for insert image
       isApproved: true,
       contributor: 'Kenji Takahashi',
-      culturalSignificance:
-          'The historic culinary belly of Tokyo preserving multi-generational culinary master crafts.',
+      culturalSignificance: 'The historic culinary belly of Tokyo preserving multi-generational culinary master crafts.',
     ),
     // 7. Global: Shoreditch Murals
     Discovery(
@@ -279,15 +267,13 @@ class Discovery {
       title: 'Shoreditch Cultural Murals',
       category: CulturalCategory.murals,
       location: 'Brick Lane, London, UK',
-      description:
-          'Vibrant street murals celebrating multicultural unity, diaspora stories, and contemporary cultural vitality.',
+      description: 'Vibrant street murals celebrating multicultural unity, diaspora stories, and contemporary cultural vitality.',
       latitude: 51.5235,
       longitude: -0.0768,
       imageUrl: '', // Empty image link ready for insert image
       isApproved: true,
       contributor: 'Elena K.',
-      culturalSignificance:
-          'A globally renowned open-air public art sanctuary reflecting East London migration and creative vitality.',
+      culturalSignificance: 'A globally renowned open-air public art sanctuary reflecting East London migration and creative vitality.',
     ),
     // 8. Global: Kyoto Crafts
     Discovery(
@@ -295,15 +281,13 @@ class Discovery {
       title: 'Kiyomizu Pottery & Bamboo Craft',
       category: CulturalCategory.crafts,
       location: 'Higashiyama, Kyoto, Japan',
-      description:
-          'Traditional stoneware studios and bamboo weaving masters continuing Edo period tea ceremony utensils.',
+      description: 'Traditional stoneware studios and bamboo weaving masters continuing Edo period tea ceremony utensils.',
       latitude: 34.9949,
       longitude: 135.7850,
       imageUrl: '', // Empty image link ready for insert image
       isApproved: true,
       contributor: 'Aoi Tanaka',
-      culturalSignificance:
-          'Intangible cultural heritage of Japanese craftsmanship centered around mindful Zen aesthetics.',
+      culturalSignificance: 'Intangible cultural heritage of Japanese craftsmanship centered around mindful Zen aesthetics.',
     ),
   ];
 }
