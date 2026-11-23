@@ -128,7 +128,7 @@ class _UploadScreenState extends State<UploadScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text(
-          '📍 Coordinates pinned: Sibu Heritage District (2.2878° N, 111.8305° E)',
+          'Coordinates pinned: Sibu Heritage District (2.2878° N, 111.8305° E)',
         ),
         backgroundColor: AppColors.primary,
         duration: Duration(seconds: 2),
@@ -289,9 +289,10 @@ class _UploadScreenState extends State<UploadScreen> {
                 border: Border.all(color: AppColors.primary, width: 2),
               ),
               child: Center(
-                child: Text(
-                  _selectedCategory.emoji,
-                  style: const TextStyle(fontSize: 36),
+                child: Icon(
+                  _selectedCategory.icon,
+                  size: 36,
+                  color: _selectedCategory.textColor,
                 ),
               ),
             ),
@@ -494,7 +495,7 @@ class _UploadScreenState extends State<UploadScreen> {
                     ),
                   ),
                   const SizedBox(width: 6),
-                  const Text('📍', style: TextStyle(fontSize: 18)),
+                  const Icon(Icons.location_on_rounded, size: 18),
                 ],
               ),
               const SizedBox(height: 2),
@@ -828,7 +829,7 @@ class _UploadScreenState extends State<UploadScreen> {
                   ),
                   child: Column(
                     children: [
-                      Text(cat.emoji, style: const TextStyle(fontSize: 20)),
+                      Icon(cat.icon, size: 20, color: cat.textColor),
                       const SizedBox(height: 4),
                       FittedBox(
                         fit: BoxFit.scaleDown,
