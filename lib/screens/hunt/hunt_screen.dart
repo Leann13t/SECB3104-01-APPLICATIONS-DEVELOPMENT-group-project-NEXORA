@@ -42,14 +42,19 @@ class _HuntScreenState extends State<HuntScreen> {
           final Map<String, DateTime> collectedMap = {};
           for (final row in response) {
             final id = row['collectible_id']?.toString() ?? '';
-            final date = DateTime.tryParse(row['collected_at']?.toString() ?? '') ?? DateTime.now();
+            final date =
+                DateTime.tryParse(row['collected_at']?.toString() ?? '') ??
+                DateTime.now();
             collectedMap[id] = date;
           }
 
           setState(() {
             _creatures = _creatures.map((c) {
               if (collectedMap.containsKey(c.id)) {
-                return c.copyWith(isCollected: true, collectedAt: collectedMap[c.id]);
+                return c.copyWith(
+                  isCollected: true,
+                  collectedAt: collectedMap[c.id],
+                );
               }
               return c;
             }).toList();
@@ -107,7 +112,11 @@ class _HuntScreenState extends State<HuntScreen> {
                 const SizedBox(height: 14),
 
                 // 2. Collection Trophy Progress Card: "12 / 50 Collected" (Image 2)
-                _buildTrophyProgressCard(collectedCount, totalCount, progressPercent),
+                _buildTrophyProgressCard(
+                  collectedCount,
+                  totalCount,
+                  progressPercent,
+                ),
 
                 const SizedBox(height: 14),
 
@@ -158,7 +167,10 @@ class _HuntScreenState extends State<HuntScreen> {
                 decoration: BoxDecoration(
                   color: const Color(0xFFDFF7F2),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFF5A4D47), width: 1.8),
+                  border: Border.all(
+                    color: const Color(0xFF5A4D47),
+                    width: 1.8,
+                  ),
                   boxShadow: const [
                     BoxShadow(
                       color: Color(0xFFD6CBC3),
@@ -211,11 +223,25 @@ class _HuntScreenState extends State<HuntScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.explore_rounded, color: AppColors.primary, size: 16),
+                        const Icon(
+                          Icons.explore_rounded,
+                          color: AppColors.primary,
+                          size: 16,
+                        ),
                         const SizedBox(width: 4),
-                        const Icon(Icons.flight_takeoff_rounded, color: Color(0xFF5A4D47), size: 14),
+                        const Icon(
+                          Icons.flight_takeoff_rounded,
+                          color: Color(0xFF5A4D47),
+                          size: 14,
+                        ),
                         const Spacer(),
-                        const Text('✦', style: TextStyle(color: Color(0xFFF2C66D), fontSize: 16)),
+                        const Text(
+                          '✦',
+                          style: TextStyle(
+                            color: Color(0xFFF2C66D),
+                            fontSize: 16,
+                          ),
+                        ),
                       ],
                     ),
                     Text(
@@ -235,11 +261,17 @@ class _HuntScreenState extends State<HuntScreen> {
                     ),
                     const SizedBox(height: 3),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF4A9188),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF336E67), width: 1.2),
+                        border: Border.all(
+                          color: const Color(0xFF336E67),
+                          width: 1.2,
+                        ),
                       ),
                       child: Text(
                         'Explore the world',
@@ -262,11 +294,23 @@ class _HuntScreenState extends State<HuntScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: const [
-              Icon(Icons.account_balance_rounded, size: 20, color: Color(0xFF5A4D47)),
+              Icon(
+                Icons.account_balance_rounded,
+                size: 20,
+                color: Color(0xFF5A4D47),
+              ),
               Icon(Icons.landscape_rounded, size: 20, color: Color(0xFF4A9188)),
-              Icon(Icons.temple_buddhist_rounded, size: 20, color: Color(0xFFE2B248)),
+              Icon(
+                Icons.temple_buddhist_rounded,
+                size: 20,
+                color: Color(0xFFE2B248),
+              ),
               Icon(Icons.apartment_rounded, size: 20, color: Color(0xFF9F72D9)),
-              Icon(Icons.location_city_rounded, size: 20, color: Color(0xFFFF7A66)),
+              Icon(
+                Icons.location_city_rounded,
+                size: 20,
+                color: Color(0xFFFF7A66),
+              ),
             ],
           ),
         ],
@@ -277,7 +321,11 @@ class _HuntScreenState extends State<HuntScreen> {
   // ---------------------------------------------------------------------------
   // 2. Trophy Progress Card: "12 / 50 Collected" (matching Image 2)
   // ---------------------------------------------------------------------------
-  Widget _buildTrophyProgressCard(int collectedCount, int totalCount, double progressPercent) {
+  Widget _buildTrophyProgressCard(
+    int collectedCount,
+    int totalCount,
+    double progressPercent,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -303,10 +351,17 @@ class _HuntScreenState extends State<HuntScreen> {
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFF0D1),
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFE2C46E), width: 1.4),
+                  border: Border.all(
+                    color: const Color(0xFFE2C46E),
+                    width: 1.4,
+                  ),
                 ),
                 child: const Center(
-                  child: Icon(Icons.emoji_events_rounded, color: Color(0xFFD68910), size: 22),
+                  child: Icon(
+                    Icons.emoji_events_rounded,
+                    color: Color(0xFFD68910),
+                    size: 22,
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -325,10 +380,16 @@ class _HuntScreenState extends State<HuntScreen> {
                 const SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.primary,
+                  ),
                 )
               else
-                const Text('✦', style: TextStyle(color: Color(0xFFF2C66D), fontSize: 16)),
+                const Text(
+                  '✦',
+                  style: TextStyle(color: Color(0xFFF2C66D), fontSize: 16),
+                ),
             ],
           ),
 
@@ -379,7 +440,9 @@ class _HuntScreenState extends State<HuntScreen> {
             child: Container(
               height: 44,
               decoration: BoxDecoration(
-                color: _activeFilterIndex == 0 ? const Color(0xFF4A9188) : Colors.white,
+                color: _activeFilterIndex == 0
+                    ? const Color(0xFF4A9188)
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(22),
                 border: Border.all(color: const Color(0xFF5A4D47), width: 1.8),
                 boxShadow: _activeFilterIndex == 0
@@ -399,14 +462,18 @@ class _HuntScreenState extends State<HuntScreen> {
                     width: 24,
                     height: 24,
                     decoration: BoxDecoration(
-                      color: _activeFilterIndex == 0 ? Colors.white : const Color(0xFFE8F6F4),
+                      color: _activeFilterIndex == 0
+                          ? Colors.white
+                          : const Color(0xFFE8F6F4),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
                       child: Icon(
                         Icons.pets_rounded,
                         size: 14,
-                        color: _activeFilterIndex == 0 ? const Color(0xFF4A9188) : const Color(0xFF5A4D47),
+                        color: _activeFilterIndex == 0
+                            ? const Color(0xFF4A9188)
+                            : const Color(0xFF5A4D47),
                       ),
                     ),
                   ),
@@ -416,7 +483,9 @@ class _HuntScreenState extends State<HuntScreen> {
                     style: GoogleFonts.fredoka(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: _activeFilterIndex == 0 ? Colors.white : const Color(0xFF5A4D47),
+                      color: _activeFilterIndex == 0
+                          ? Colors.white
+                          : const Color(0xFF5A4D47),
                     ),
                   ),
                 ],
@@ -433,7 +502,9 @@ class _HuntScreenState extends State<HuntScreen> {
             child: Container(
               height: 44,
               decoration: BoxDecoration(
-                color: _activeFilterIndex == 1 ? const Color(0xFF5A4D47) : Colors.white,
+                color: _activeFilterIndex == 1
+                    ? const Color(0xFF5A4D47)
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(22),
                 border: Border.all(color: const Color(0xFF5A4D47), width: 1.8),
                 boxShadow: _activeFilterIndex == 1
@@ -452,7 +523,9 @@ class _HuntScreenState extends State<HuntScreen> {
                   Icon(
                     Icons.lock_rounded,
                     size: 16,
-                    color: _activeFilterIndex == 1 ? Colors.white : const Color(0xFF5A4D47),
+                    color: _activeFilterIndex == 1
+                        ? Colors.white
+                        : const Color(0xFF5A4D47),
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -460,7 +533,9 @@ class _HuntScreenState extends State<HuntScreen> {
                     style: GoogleFonts.fredoka(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: _activeFilterIndex == 1 ? Colors.white : const Color(0xFF5A4D47),
+                      color: _activeFilterIndex == 1
+                          ? Colors.white
+                          : const Color(0xFF5A4D47),
                     ),
                   ),
                 ],
@@ -508,9 +583,17 @@ class _HuntScreenState extends State<HuntScreen> {
                 opacity: 0.85,
                 child: Row(
                   children: const [
-                    Icon(Icons.landscape_rounded, size: 48, color: Color(0xFFB8D8D8)),
+                    Icon(
+                      Icons.landscape_rounded,
+                      size: 48,
+                      color: Color(0xFFB8D8D8),
+                    ),
                     SizedBox(width: 8),
-                    Icon(Icons.temple_buddhist_rounded, size: 48, color: Color(0xFFD6A46A)),
+                    Icon(
+                      Icons.temple_buddhist_rounded,
+                      size: 48,
+                      color: Color(0xFFD6A46A),
+                    ),
                   ],
                 ),
               ),
@@ -521,18 +604,28 @@ class _HuntScreenState extends State<HuntScreen> {
               top: 10,
               right: 20,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 3,
+                ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFFA569BD), Color(0xFF8E44AD)],
                   ),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF5A4D47), width: 1.2),
+                  border: Border.all(
+                    color: const Color(0xFF5A4D47),
+                    width: 1.2,
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.star_rounded, color: Colors.white, size: 12),
+                    const Icon(
+                      Icons.star_rounded,
+                      color: Colors.white,
+                      size: 12,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'Legendary',
@@ -551,7 +644,11 @@ class _HuntScreenState extends State<HuntScreen> {
             Positioned(
               top: 10,
               left: 14,
-              child: const Icon(Icons.military_tech_rounded, color: Color(0xFFF39C12), size: 26),
+              child: const Icon(
+                Icons.military_tech_rounded,
+                color: Color(0xFFF39C12),
+                size: 26,
+              ),
             ),
 
             // Center Lucky Maneki Cat Character: Replaced emoji with empty image link slot!
@@ -584,11 +681,17 @@ class _HuntScreenState extends State<HuntScreen> {
                       ),
                       const SizedBox(height: 4),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.9),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF5A4D47), width: 1.0),
+                          border: Border.all(
+                            color: const Color(0xFF5A4D47),
+                            width: 1.0,
+                          ),
                         ),
                         child: Text(
                           'Tap to view sacred lore →',
@@ -623,7 +726,11 @@ class _HuntScreenState extends State<HuntScreen> {
           padding: const EdgeInsets.symmetric(vertical: 40),
           child: Column(
             children: [
-              const Icon(Icons.search_off_rounded, size: 40, color: AppColors.secondaryText),
+              const Icon(
+                Icons.search_off_rounded,
+                size: 40,
+                color: AppColors.secondaryText,
+              ),
               const SizedBox(height: 10),
               Text(
                 'No creatures in this filter yet.',
@@ -707,7 +814,11 @@ class _HuntScreenState extends State<HuntScreen> {
                         shape: BoxShape.circle,
                       ),
                       child: const Center(
-                        child: Icon(Icons.lock_rounded, size: 30, color: Colors.white),
+                        child: Icon(
+                          Icons.lock_rounded,
+                          size: 30,
+                          color: Colors.white,
+                        ),
                       ),
                     )
                   : _buildCreatureImageSlot(creature, size: 76),
@@ -717,7 +828,10 @@ class _HuntScreenState extends State<HuntScreen> {
             Positioned(
               bottom: 30,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 3,
+                ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: isLocked
@@ -725,7 +839,10 @@ class _HuntScreenState extends State<HuntScreen> {
                         : [const Color(0xFFFF9E8A), const Color(0xFFFF6E55)],
                   ),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF5A4D47), width: 1.2),
+                  border: Border.all(
+                    color: const Color(0xFF5A4D47),
+                    width: 1.2,
+                  ),
                 ),
                 child: Text(
                   creature.country,
@@ -742,15 +859,15 @@ class _HuntScreenState extends State<HuntScreen> {
             Positioned(
               bottom: 8,
               child: Text(
-                isLocked ? '🔒 Locked' : creature.rarity.badgeText,
+                isLocked ? 'Locked' : creature.rarity.badgeText,
                 style: GoogleFonts.fredoka(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   color: isLocked
                       ? const Color(0xFF8A6A64)
                       : (creature.rarity == CreatureRarity.rare
-                          ? const Color(0xFFD68910)
-                          : const Color(0xFF2980B9)),
+                            ? const Color(0xFFD68910)
+                            : const Color(0xFF2980B9)),
                 ),
               ),
             ),
@@ -764,7 +881,10 @@ class _HuntScreenState extends State<HuntScreen> {
   // Empty Image Link Slot Helper (replaces emoji with empty image link slot)
   // User can easily insert real images later via creature.imageUrl or creature.imageAsset
   // ---------------------------------------------------------------------------
-  Widget _buildCreatureImageSlot(CulturalCreature creature, {double size = 76}) {
+  Widget _buildCreatureImageSlot(
+    CulturalCreature creature, {
+    double size = 76,
+  }) {
     if (creature.imageUrl.trim().isNotEmpty) {
       return Container(
         width: size,
@@ -874,7 +994,11 @@ class _HuntScreenState extends State<HuntScreen> {
           color: Color(0xFFFFFDF8),
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           boxShadow: [
-            BoxShadow(color: Color(0x40000000), offset: Offset(0, -4), blurRadius: 20),
+            BoxShadow(
+              color: Color(0x40000000),
+              offset: Offset(0, -4),
+              blurRadius: 20,
+            ),
           ],
         ),
         child: Column(
@@ -925,11 +1049,17 @@ class _HuntScreenState extends State<HuntScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFFF0D1),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFE2C46E), width: 1.2),
+                            border: Border.all(
+                              color: const Color(0xFFE2C46E),
+                              width: 1.2,
+                            ),
                           ),
                           child: Text(
                             creature.rarity.badgeText,
@@ -942,21 +1072,32 @@ class _HuntScreenState extends State<HuntScreen> {
                         ),
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: creature.isCollected ? const Color(0xFFD4F6E6) : const Color(0xFFFFECEE),
+                            color: creature.isCollected
+                                ? const Color(0xFFD4F6E6)
+                                : const Color(0xFFFFECEE),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: creature.isCollected ? const Color(0xFF2E856E) : const Color(0xFFE74C3C),
+                              color: creature.isCollected
+                                  ? const Color(0xFF2E856E)
+                                  : const Color(0xFFE74C3C),
                               width: 1.2,
                             ),
                           ),
                           child: Text(
-                            creature.isCollected ? '✓ Cataloged in Collection' : '🔒 Locked / Undiscovered',
+                            creature.isCollected
+                                ? '✓ Cataloged in Collection'
+                                : 'Locked / Undiscovered',
                             style: GoogleFonts.fredoka(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: creature.isCollected ? const Color(0xFF1E5F57) : const Color(0xFFB03A2E),
+                              color: creature.isCollected
+                                  ? const Color(0xFF1E5F57)
+                                  : const Color(0xFFB03A2E),
                             ),
                           ),
                         ),
@@ -972,14 +1113,21 @@ class _HuntScreenState extends State<HuntScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF5A4D47), width: 1.4),
+                        border: Border.all(
+                          color: const Color(0xFF5A4D47),
+                          width: 1.4,
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.auto_awesome, size: 16, color: Color(0xFFD68910)),
+                              const Icon(
+                                Icons.auto_awesome,
+                                size: 16,
+                                color: Color(0xFFD68910),
+                              ),
                               const SizedBox(width: 6),
                               Text(
                                 'Cultural Folklore & Meaning',
@@ -1014,14 +1162,21 @@ class _HuntScreenState extends State<HuntScreen> {
                       decoration: BoxDecoration(
                         color: const Color(0xFFE8F6F4),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.primary, width: 1.4),
+                        border: Border.all(
+                          color: AppColors.primary,
+                          width: 1.4,
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.location_on_rounded, size: 16, color: AppColors.primary),
+                              const Icon(
+                                Icons.location_on_rounded,
+                                size: 16,
+                                color: AppColors.primary,
+                              ),
                               const SizedBox(width: 6),
                               Text(
                                 'Eligible Real-World Location',
@@ -1068,7 +1223,10 @@ class _HuntScreenState extends State<HuntScreen> {
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFF336E67), width: 1.6),
+                          border: Border.all(
+                            color: const Color(0xFF336E67),
+                            width: 1.6,
+                          ),
                           boxShadow: const [
                             BoxShadow(
                               color: Color(0xFF336E67),
@@ -1081,7 +1239,11 @@ class _HuntScreenState extends State<HuntScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.map_rounded, color: Colors.white, size: 18),
+                              const Icon(
+                                Icons.map_rounded,
+                                color: Colors.white,
+                                size: 18,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 'Explore on Cultural Map →',
