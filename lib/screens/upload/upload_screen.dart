@@ -425,7 +425,7 @@ class _UploadScreenState extends State<UploadScreen> {
                   // 4. Gem Title Field
                   _buildTextField(
                     label: 'Cultural Gem Title',
-                    hintText: 'e.g. Sibu Dian Bian Hu, Heritage Pagoda, Belacan Mural',
+                    hintText: 'e.g. Rome Colosseum, Tsukiji Market, Sibu Heritage Lane',
                     controller: _titleController,
                     icon: Icons.edit_location_alt_rounded,
                   ),
@@ -445,7 +445,7 @@ class _UploadScreenState extends State<UploadScreen> {
                   // 7. Cultural Significance
                   _buildTextField(
                     label: 'Cultural Significance & Heritage Note (Optional)',
-                    hintText: 'Why is this place important to Sarawak history or community?',
+                    hintText: 'Why is this place culturally significant to the community or regional heritage?',
                     controller: _significanceController,
                     maxLines: 2,
                     icon: Icons.history_edu_rounded,
@@ -1212,7 +1212,7 @@ class _UploadScreenState extends State<UploadScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'All community submissions are verified to ensure cultural authenticity and respectful representation of Sarawak traditions before publication.',
+                  'Community submissions initially have Pending Review status. Once verified for authenticity, places appear publicly on the Cultural Map. Curated Hunt collectibles are curated separately by the LoraGuide team.',
                   style: GoogleFonts.nunito(
                     fontSize: 11.5,
                     color: const Color(0xFF4A6B65),
