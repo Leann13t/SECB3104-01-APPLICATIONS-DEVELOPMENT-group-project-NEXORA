@@ -49,7 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final List<Map<String, dynamic>> _badges = [
     {
       'name': 'Heritage Scout',
-      'emoji': '🏛️',
+      'icon': Icons.account_balance_rounded,
       'category': 'Heritage',
       'status': 'Unlocked',
       'desc': 'Discovered 3 historical landmarks in Sarawak.',
@@ -58,7 +58,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     },
     {
       'name': 'Street Foodie',
-      'emoji': '🍜',
+      'icon': Icons.restaurant_rounded,
       'category': 'Food',
       'status': 'Unlocked',
       'desc': 'Explored 3 traditional Sarawak food spots.',
@@ -67,7 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     },
     {
       'name': 'Mural Hunter',
-      'emoji': '🎨',
+      'icon': Icons.palette_rounded,
       'category': 'Murals',
       'status': 'Unlocked',
       'desc': 'Cataloged 2 vibrant community street murals.',
@@ -76,7 +76,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     },
     {
       'name': 'Craft Apprentice',
-      'emoji': '🧺',
+      'icon': Icons.shopping_basket_rounded,
       'category': 'Crafts',
       'status': 'In Progress (2/3)',
       'desc': 'Visit 3 indigenous craft and weaving workshops.',
@@ -85,7 +85,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     },
     {
       'name': 'Master Curator',
-      'emoji': '👑',
+      'icon': Icons.workspace_premium_rounded,
       'category': 'Curator',
       'status': 'Locked',
       'desc': 'Submit 5 community-approved cultural gems.',
@@ -125,10 +125,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         title: Row(
           children: [
-            Text(
-              badge['emoji'] as String,
-              style: const TextStyle(fontSize: 24),
-            ),
+            Icon(badge['icon'] as IconData, size: 24, color: AppColors.primary),
             const SizedBox(width: 8),
             Text(
               badge['name'] as String,
@@ -557,7 +554,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Row(
       children: [
         _buildStatCard(
-          emoji: '📍',
+          icon: Icons.location_on_rounded,
           count: '6',
           label: 'Gems Visited',
           bg: const Color(0xFFD8F2FF),
@@ -565,7 +562,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         const SizedBox(width: 8),
         _buildStatCard(
-          emoji: '🐾',
+          icon: Icons.pets_rounded,
           count: '3',
           label: 'Creatures',
           bg: const Color(0xFFFFE0ED),
@@ -573,7 +570,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         const SizedBox(width: 8),
         _buildStatCard(
-          emoji: '✍️',
+          icon: Icons.edit_note_rounded,
           count: '3',
           label: 'Shared',
           bg: const Color(0xFFFFF0D1),
@@ -584,7 +581,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildStatCard({
-    required String emoji,
+    required IconData icon,
     required String count,
     required String label,
     required Color bg,
@@ -607,7 +604,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         child: Column(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 20)),
+            Icon(icon, size: 20, color: AppColors.primary),
             const SizedBox(height: 2),
             Text(
               count,
@@ -652,7 +649,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(width: 6),
-                const Text('🎖️', style: TextStyle(fontSize: 16)),
+                const Icon(Icons.military_tech_rounded, size: 16),
               ],
             ),
             Text(
@@ -704,14 +701,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        badge['emoji'] as String,
-                        style: TextStyle(
-                          fontSize: 28,
-                          color: isUnlocked
-                              ? null
-                              : Colors.black.withValues(alpha: 0.35),
-                        ),
+                      Icon(
+                        badge['icon'] as IconData,
+                        size: 28,
+                        color: isUnlocked
+                            ? AppColors.primary
+                            : Colors.black.withValues(alpha: 0.35),
                       ),
                       const SizedBox(height: 6),
                       Text(
@@ -818,9 +813,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     border: Border.all(color: AppColors.darkBrown, width: 1.4),
                   ),
                   child: Center(
-                    child: Text(
-                      category.emoji,
-                      style: const TextStyle(fontSize: 22),
+                    child: Icon(
+                      category.icon,
+                      size: 22,
+                      color: category.textColor,
                     ),
                   ),
                 ),
