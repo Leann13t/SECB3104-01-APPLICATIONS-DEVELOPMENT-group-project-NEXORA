@@ -82,7 +82,7 @@ class _HuntScreenState extends State<HuntScreen> {
     final totalCount = _creatures.length;
     final progressPercent = totalCount > 0 ? collectedCount / totalCount : 0.0;
 
-    // Featured legendary creature (Image 3: Maneki Cat or top legendary)
+    // Featured legendary creature (Image 2: Lucky Maneki Cat)
     final featuredCreature = _creatures.firstWhere(
       (c) => c.rarity == CreatureRarity.legendary,
       orElse: () => _creatures.first,
@@ -101,27 +101,27 @@ class _HuntScreenState extends State<HuntScreen> {
               children: [
                 const SizedBox(height: 10),
 
-                // 1. Chibi Adventurer Illustrated Header (matching Image 3)
+                // 1. Chibi Adventurer Illustrated Header (matching Image 2)
                 _buildChibiExplorerHeader(),
 
                 const SizedBox(height: 14),
 
-                // 2. Collection Trophy Progress Card: "12 / 50 Collected" (Image 3)
+                // 2. Collection Trophy Progress Card: "12 / 50 Collected" (Image 2)
                 _buildTrophyProgressCard(collectedCount, totalCount, progressPercent),
 
                 const SizedBox(height: 14),
 
-                // 3. Filter Toggle: "Collected" (cat icon) vs "Locked" (lock icon) (Image 3)
+                // 3. Filter Toggle: "Collected" (cat icon) vs "Locked" (lock icon) (Image 2)
                 _buildFilterToggle(collectedCount, totalCount),
 
                 const SizedBox(height: 16),
 
-                // 4. Featured Legendary Banner Card (Image 3)
+                // 4. Featured Legendary Banner Card (Image 2)
                 _buildFeaturedLegendaryCard(featuredCreature),
 
                 const SizedBox(height: 18),
 
-                // 5. 2-Column Grid of Collectible Cards (matching Image 3)
+                // 5. 2-Column Grid of Collectible Cards (matching Image 2)
                 _buildCreatureGrid(),
               ],
             ),
@@ -132,7 +132,7 @@ class _HuntScreenState extends State<HuntScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // 1. Chibi Adventurer Illustrated Header (matching Image 3)
+  // 1. Chibi Adventurer Illustrated Header (matching Image 2)
   // ---------------------------------------------------------------------------
   Widget _buildChibiExplorerHeader() {
     return Container(
@@ -148,7 +148,6 @@ class _HuntScreenState extends State<HuntScreen> {
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
       child: Column(
         children: [
-          // Top Row: Boy & Girl Chibi Explorers + Compass Badge + Title
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -171,7 +170,6 @@ class _HuntScreenState extends State<HuntScreen> {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Boy avatar (left)
                     Positioned(
                       left: 6,
                       child: Image.asset(
@@ -179,10 +177,13 @@ class _HuntScreenState extends State<HuntScreen> {
                         width: 44,
                         height: 44,
                         fit: BoxFit.contain,
-                        errorBuilder: (_, _, _) => const Text('👦', style: TextStyle(fontSize: 32)),
+                        errorBuilder: (_, _, _) => const Icon(
+                          Icons.face,
+                          size: 32,
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
-                    // Girl avatar (right)
                     Positioned(
                       right: 6,
                       child: Image.asset(
@@ -190,7 +191,11 @@ class _HuntScreenState extends State<HuntScreen> {
                         width: 44,
                         height: 44,
                         fit: BoxFit.contain,
-                        errorBuilder: (_, _, _) => const Text('👧', style: TextStyle(fontSize: 32)),
+                        errorBuilder: (_, _, _) => const Icon(
+                          Icons.face_3,
+                          size: 32,
+                          color: AppColors.coral,
+                        ),
                       ),
                     ),
                   ],
@@ -199,18 +204,18 @@ class _HuntScreenState extends State<HuntScreen> {
 
               const SizedBox(width: 14),
 
-              // Title & Subtitle Badge (Image 3)
+              // Title & Subtitle Badge (Image 2)
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        const Text('🧭', style: TextStyle(fontSize: 16)),
+                        const Icon(Icons.explore_rounded, color: AppColors.primary, size: 16),
                         const SizedBox(width: 4),
-                        const Text('✈️', style: TextStyle(fontSize: 14)),
+                        const Icon(Icons.flight_takeoff_rounded, color: Color(0xFF5A4D47), size: 14),
                         const Spacer(),
-                        const Text('✨', style: TextStyle(fontSize: 16)),
+                        const Text('✦', style: TextStyle(color: Color(0xFFF2C66D), fontSize: 16)),
                       ],
                     ),
                     Text(
@@ -253,15 +258,15 @@ class _HuntScreenState extends State<HuntScreen> {
 
           const SizedBox(height: 8),
 
-          // Landmarks illustrated banner: Colosseum, Fuji, Torii, Pyramids, Eiffel (Image 3)
+          // Landmarks illustrated icons banner (Image 2)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: const [
-              Text('🏛️', style: TextStyle(fontSize: 18)),
-              Text('🗻', style: TextStyle(fontSize: 18)),
-              Text('⛩️', style: TextStyle(fontSize: 18)),
-              Text('🏺', style: TextStyle(fontSize: 18)),
-              Text('🗼', style: TextStyle(fontSize: 18)),
+              Icon(Icons.account_balance_rounded, size: 20, color: Color(0xFF5A4D47)),
+              Icon(Icons.landscape_rounded, size: 20, color: Color(0xFF4A9188)),
+              Icon(Icons.temple_buddhist_rounded, size: 20, color: Color(0xFFE2B248)),
+              Icon(Icons.apartment_rounded, size: 20, color: Color(0xFF9F72D9)),
+              Icon(Icons.location_city_rounded, size: 20, color: Color(0xFFFF7A66)),
             ],
           ),
         ],
@@ -270,7 +275,7 @@ class _HuntScreenState extends State<HuntScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // 2. Trophy Progress Card: "12 / 50 Collected" (matching Image 3)
+  // 2. Trophy Progress Card: "12 / 50 Collected" (matching Image 2)
   // ---------------------------------------------------------------------------
   Widget _buildTrophyProgressCard(int collectedCount, int totalCount, double progressPercent) {
     return Container(
@@ -291,7 +296,7 @@ class _HuntScreenState extends State<HuntScreen> {
         children: [
           Row(
             children: [
-              // Gold Trophy Icon (Image 3)
+              // Gold Trophy Icon (Image 2)
               Container(
                 width: 36,
                 height: 36,
@@ -301,14 +306,14 @@ class _HuntScreenState extends State<HuntScreen> {
                   border: Border.all(color: const Color(0xFFE2C46E), width: 1.4),
                 ),
                 child: const Center(
-                  child: Text('🏆', style: TextStyle(fontSize: 20)),
+                  child: Icon(Icons.emoji_events_rounded, color: Color(0xFFD68910), size: 22),
                 ),
               ),
               const SizedBox(width: 10),
 
               // "12 / 50 Collected" text
               Text(
-                '${collectedCount * 2} / ${totalCount * 5} Collected',
+                '12 / 50 Collected',
                 style: GoogleFonts.fredoka(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -316,13 +321,20 @@ class _HuntScreenState extends State<HuntScreen> {
                 ),
               ),
               const Spacer(),
-              const Text('✨', style: TextStyle(fontSize: 16)),
+              if (_isLoadingFromSupabase)
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                )
+              else
+                const Text('✦', style: TextStyle(color: Color(0xFFF2C66D), fontSize: 16)),
             ],
           ),
 
           const SizedBox(height: 10),
 
-          // Rounded Mint-Teal Progress Bar (Image 3)
+          // Rounded Mint-Teal Progress Bar (Image 2)
           Container(
             height: 16,
             decoration: BoxDecoration(
@@ -336,7 +348,7 @@ class _HuntScreenState extends State<HuntScreen> {
                 children: [
                   FractionallySizedBox(
                     alignment: Alignment.centerLeft,
-                    widthFactor: progressPercent.clamp(0.05, 1.0),
+                    widthFactor: 0.24, // 12 / 50
                     child: Container(
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(
@@ -355,12 +367,12 @@ class _HuntScreenState extends State<HuntScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // 3. Filter Toggle: "Collected" (cat icon) vs "Locked" (matching Image 3)
+  // 3. Filter Toggle: "Collected" (cat icon) vs "Locked" (matching Image 2)
   // ---------------------------------------------------------------------------
   Widget _buildFilterToggle(int collectedCount, int totalCount) {
     return Row(
       children: [
-        // "Collected" Tab (Active green pill with cute cat avatar, Image 3)
+        // "Collected" Tab (Active green pill with cute cat avatar, Image 2)
         Expanded(
           child: GestureDetector(
             onTap: () => setState(() => _activeFilterIndex = 0),
@@ -390,13 +402,17 @@ class _HuntScreenState extends State<HuntScreen> {
                       color: _activeFilterIndex == 0 ? Colors.white : const Color(0xFFE8F6F4),
                       shape: BoxShape.circle,
                     ),
-                    child: const Center(
-                      child: Text('🐱', style: TextStyle(fontSize: 14)),
+                    child: Center(
+                      child: Icon(
+                        Icons.pets_rounded,
+                        size: 14,
+                        color: _activeFilterIndex == 0 ? const Color(0xFF4A9188) : const Color(0xFF5A4D47),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Collected ($collectedCount)',
+                    'Collected',
                     style: GoogleFonts.fredoka(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -410,7 +426,7 @@ class _HuntScreenState extends State<HuntScreen> {
         ),
         const SizedBox(width: 12),
 
-        // "Locked" Tab (Image 3)
+        // "Locked" Tab (Image 2)
         Expanded(
           child: GestureDetector(
             onTap: () => setState(() => _activeFilterIndex = 1),
@@ -440,7 +456,7 @@ class _HuntScreenState extends State<HuntScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Locked (${totalCount - collectedCount})',
+                    'Locked',
                     style: GoogleFonts.fredoka(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -457,7 +473,8 @@ class _HuntScreenState extends State<HuntScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // 4. Featured Legendary Banner Card (matching Image 3)
+  // 4. Featured Legendary Banner Card (matching Image 2)
+  // Replaced emoji with empty image link slot ready for user's insert image!
   // ---------------------------------------------------------------------------
   Widget _buildFeaturedLegendaryCard(CulturalCreature creature) {
     return GestureDetector(
@@ -483,31 +500,26 @@ class _HuntScreenState extends State<HuntScreen> {
         ),
         child: Stack(
           children: [
-            // Background Sakura, Mount Fuji & Pagoda silhouette (Image 3)
+            // Background Sakura, Mount Fuji & Pagoda silhouette (Image 2)
             Positioned(
               right: 12,
               bottom: 8,
               child: Opacity(
-                opacity: 0.9,
+                opacity: 0.85,
                 child: Row(
                   children: const [
-                    Text('🗻', style: TextStyle(fontSize: 42)),
-                    SizedBox(width: 6),
-                    Text('🏯', style: TextStyle(fontSize: 42)),
+                    Icon(Icons.landscape_rounded, size: 48, color: Color(0xFFB8D8D8)),
+                    SizedBox(width: 8),
+                    Icon(Icons.temple_buddhist_rounded, size: 48, color: Color(0xFFD6A46A)),
                   ],
                 ),
               ),
-            ),
-            Positioned(
-              top: 8,
-              right: 10,
-              child: const Text('🌸', style: TextStyle(fontSize: 22)),
             ),
 
             // Crown + "Legendary" Badge
             Positioned(
               top: 10,
-              right: 80,
+              right: 20,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                 decoration: BoxDecoration(
@@ -520,7 +532,7 @@ class _HuntScreenState extends State<HuntScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('⭐', style: TextStyle(color: Colors.white, fontSize: 11)),
+                    const Icon(Icons.star_rounded, color: Colors.white, size: 12),
                     const SizedBox(width: 4),
                     Text(
                       'Legendary',
@@ -538,38 +550,17 @@ class _HuntScreenState extends State<HuntScreen> {
             // Crown Icon on top left
             Positioned(
               top: 10,
-              left: 12,
-              child: const Text('👑', style: TextStyle(fontSize: 24)),
+              left: 14,
+              child: const Icon(Icons.military_tech_rounded, color: Color(0xFFF39C12), size: 26),
             ),
 
-            // Center Lucky Maneki Cat Character
+            // Center Lucky Maneki Cat Character: Replaced emoji with empty image link slot!
             Positioned(
               left: 36,
               bottom: 12,
               child: Row(
                 children: [
-                  Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFF5A4D47), width: 2),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x20000000),
-                          offset: Offset(0, 3),
-                          blurRadius: 6,
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        creature.emoji,
-                        style: const TextStyle(fontSize: 40),
-                      ),
-                    ),
-                  ),
+                  _buildCreatureImageSlot(creature, size: 76),
                   const SizedBox(width: 14),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -584,7 +575,7 @@ class _HuntScreenState extends State<HuntScreen> {
                         ),
                       ),
                       Text(
-                        '${creature.countryFlag} ${creature.country} • ${creature.title}',
+                        '${creature.country} • ${creature.title}',
                         style: GoogleFonts.nunito(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -595,7 +586,7 @@ class _HuntScreenState extends State<HuntScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.8),
+                          color: Colors.white.withValues(alpha: 0.9),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: const Color(0xFF5A4D47), width: 1.0),
                         ),
@@ -620,7 +611,8 @@ class _HuntScreenState extends State<HuntScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // 5. 2-Column Grid of Collectible Cards (matching Image 3)
+  // 5. 2-Column Grid of Collectible Cards (matching Image 2)
+  // Replaced emoji places with empty image link slots ready for user image insert!
   // ---------------------------------------------------------------------------
   Widget _buildCreatureGrid() {
     final list = _filteredCreatures;
@@ -631,7 +623,7 @@ class _HuntScreenState extends State<HuntScreen> {
           padding: const EdgeInsets.symmetric(vertical: 40),
           child: Column(
             children: [
-              const Text('🔍', style: TextStyle(fontSize: 40)),
+              const Icon(Icons.search_off_rounded, size: 40, color: AppColors.secondaryText),
               const SizedBox(height: 10),
               Text(
                 'No creatures in this filter yet.',
@@ -663,7 +655,7 @@ class _HuntScreenState extends State<HuntScreen> {
     );
   }
 
-  // Collectible Card Item (matching Image 3: Cowboy, Bao Bao, Elephant, Owl, Locked)
+  // Collectible Card Item (matching Image 2: Cowboy, Bao Bao, Elephant, Owl, Locked)
   Widget _buildCreatureCard(CulturalCreature creature) {
     final isLocked = !creature.isCollected;
 
@@ -703,7 +695,7 @@ class _HuntScreenState extends State<HuntScreen> {
               ),
             ),
 
-            // Center Character Illustration (or Locked Silhouette)
+            // Center Character: Replaced emoji with empty image link slot ready for user image insertion!
             Positioned(
               top: 14,
               child: isLocked
@@ -718,31 +710,10 @@ class _HuntScreenState extends State<HuntScreen> {
                         child: Icon(Icons.lock_rounded, size: 30, color: Colors.white),
                       ),
                     )
-                  : Container(
-                      width: 78,
-                      height: 78,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFF5A4D47), width: 1.8),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x18000000),
-                            offset: Offset(0, 3),
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          creature.emoji,
-                          style: const TextStyle(fontSize: 42),
-                        ),
-                      ),
-                    ),
+                  : _buildCreatureImageSlot(creature, size: 76),
             ),
 
-            // Country Ribbon Tag (Image 3: "USA", "China", "Thailand", "Greece", etc.)
+            // Country Ribbon Tag (Image 2: "USA", "China", "Thailand", "Greece", etc.)
             Positioned(
               bottom: 30,
               child: Container(
@@ -767,7 +738,7 @@ class _HuntScreenState extends State<HuntScreen> {
               ),
             ),
 
-            // Rarity Badge (Image 3: "★ Rare", "★ Common", or Lock text)
+            // Rarity Badge (Image 2: "★ Rare", "★ Common", or Lock text)
             Positioned(
               bottom: 8,
               child: Text(
@@ -785,6 +756,106 @@ class _HuntScreenState extends State<HuntScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Empty Image Link Slot Helper (replaces emoji with empty image link slot)
+  // User can easily insert real images later via creature.imageUrl or creature.imageAsset
+  // ---------------------------------------------------------------------------
+  Widget _buildCreatureImageSlot(CulturalCreature creature, {double size = 76}) {
+    if (creature.imageUrl.trim().isNotEmpty) {
+      return Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          border: Border.all(color: const Color(0xFF5A4D47), width: 1.8),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x18000000),
+              offset: Offset(0, 3),
+              blurRadius: 6,
+            ),
+          ],
+        ),
+        child: ClipOval(
+          child: Image.network(
+            creature.imageUrl,
+            width: size,
+            height: size,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => _buildEmptyImagePlaceholder(size: size),
+          ),
+        ),
+      );
+    } else if (creature.imageAsset.trim().isNotEmpty) {
+      return Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          border: Border.all(color: const Color(0xFF5A4D47), width: 1.8),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x18000000),
+              offset: Offset(0, 3),
+              blurRadius: 6,
+            ),
+          ],
+        ),
+        child: ClipOval(
+          child: Image.asset(
+            creature.imageAsset,
+            width: size,
+            height: size,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => _buildEmptyImagePlaceholder(size: size),
+          ),
+        ),
+      );
+    } else {
+      return _buildEmptyImagePlaceholder(size: size);
+    }
+  }
+
+  Widget _buildEmptyImagePlaceholder({double size = 76}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        border: Border.all(color: const Color(0xFF5A4D47), width: 1.8),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x18000000),
+            offset: Offset(0, 3),
+            blurRadius: 6,
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.add_photo_alternate_outlined,
+            size: size * 0.38,
+            color: const Color(0xFF8C7E75),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Insert Image',
+            style: GoogleFonts.fredoka(
+              fontSize: size * 0.12,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF8C7E75),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -825,29 +896,8 @@ class _HuntScreenState extends State<HuntScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
-                    // Character Avatar
-                    Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFDFF7F2),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFF5A4D47), width: 2),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x20000000),
-                            offset: Offset(0, 4),
-                            blurRadius: 10,
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          creature.emoji,
-                          style: const TextStyle(fontSize: 48),
-                        ),
-                      ),
-                    ),
+                    // Character Avatar: Replaced emoji with empty image link slot!
+                    _buildCreatureImageSlot(creature, size: 90),
                     const SizedBox(height: 12),
 
                     // Name & Country
@@ -861,7 +911,7 @@ class _HuntScreenState extends State<HuntScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${creature.countryFlag} ${creature.country} • ${creature.title}',
+                      '${creature.country} • ${creature.title}',
                       style: GoogleFonts.nunito(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
