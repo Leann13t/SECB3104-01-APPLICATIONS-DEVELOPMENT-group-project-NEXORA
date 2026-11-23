@@ -19,19 +19,6 @@ enum CulturalCategory {
     }
   }
 
-  String get emoji {
-    switch (this) {
-      case CulturalCategory.food:
-        return '🍜';
-      case CulturalCategory.heritage:
-        return '🏛️';
-      case CulturalCategory.murals:
-        return '🎨';
-      case CulturalCategory.crafts:
-        return '🧺';
-    }
-  }
-
   IconData get icon {
     switch (this) {
       case CulturalCategory.food:
@@ -93,7 +80,7 @@ class Discovery {
   final String description;
   final double? latitude;
   final double? longitude;
-  final String? imageUrl;
+  final String imageUrl; // Empty image link ready for user image insertion
   final bool isApproved;
   final String contributor;
   final String? culturalSignificance;
@@ -107,12 +94,14 @@ class Discovery {
     required this.description,
     this.latitude,
     this.longitude,
-    this.imageUrl,
+    this.imageUrl = '', // Empty image link
     this.isApproved = true,
     this.contributor = 'Community Explorer',
     this.culturalSignificance,
     this.isBookmarked = false,
   });
+
+  bool get hasCustomImage => imageUrl.trim().isNotEmpty;
 
   Discovery copyWith({
     String? id,
@@ -158,11 +147,11 @@ class Discovery {
       id: map['id']?.toString() ?? '',
       title: map['title']?.toString() ?? 'Cultural Gem',
       category: cat,
-      location: map['location']?.toString() ?? 'Global',
+      location: map['location']?.toString() ?? 'Johor, Malaysia',
       description: map['description']?.toString() ?? '',
-      latitude: (map['latitude'] as num?)?.toDouble(),
-      longitude: (map['longitude'] as num?)?.toDouble(),
-      imageUrl: map['image_url']?.toString(),
+      latitude: (map['latitude'] as num?)?.toDouble() ?? 1.4927,
+      longitude: (map['longitude'] as num?)?.toDouble() ?? 103.7414,
+      imageUrl: map['image_url']?.toString() ?? '',
       isApproved: map['is_approved'] == true,
       contributor: map['contributor']?.toString() ?? 'Community Explorer',
       culturalSignificance: map['cultural_significance']?.toString(),
@@ -185,8 +174,74 @@ class Discovery {
     };
   }
 
-  // Curated global cultural discoveries clearly marked as placeholder development data
+  // Curated cultural discoveries with Johor, Malaysia local spots and global gems
+  // (Zero emojis, empty image links ready for user image insertion)
   static List<Discovery> get placeholderDiscoveries => const [
+    // 1. Johor Bahru, Malaysia (User's Live Location)
+    Discovery(
+      id: 'd_johor_heritage',
+      title: 'Tan Hiok Nee Cultural Street',
+      category: CulturalCategory.heritage,
+      location: 'Jalan Tan Hiok Nee, Johor Bahru, Johor, Malaysia',
+      description:
+          'Historic cultural lane in downtown Johor Bahru named after leader Tan Hiok Nee, featuring century-old bakeries, traditional Hainanese coffee shops, and pre-war Chinese shophouses.',
+      latitude: 1.4578,
+      longitude: 103.7644,
+      imageUrl: '', // Empty image link ready for insert image
+      isApproved: true,
+      contributor: 'Wei Loon Tan',
+      culturalSignificance:
+          'Center of Johor Bahru Chinese diaspora heritage and historical Ngee Heng Kongsi trade history along Sungai Segget.',
+    ),
+    // 2. Johor Bahru, Malaysia (Food)
+    Discovery(
+      id: 'd_johor_food',
+      title: 'Restoran Hua Mui & Authentic Johor Laksa',
+      category: CulturalCategory.food,
+      location: 'Jalan Trus, Bandar Johor Bahru, Johor, Malaysia',
+      description:
+          'Iconic heritage café operating since 1946 serving traditional Hainanese chicken chop and royal Johor Laksa made with spaghetti and rich spiced fish gravy.',
+      latitude: 1.4582,
+      longitude: 103.7648,
+      imageUrl: '', // Empty image link ready for insert image
+      isApproved: true,
+      contributor: 'Faridah Ahmad',
+      culturalSignificance:
+          'Culinary monument bridging Hainanese migrant cooking with traditional royal Johor Malay banquet recipes.',
+    ),
+    // 3. Johor Bahru, Malaysia (Murals)
+    Discovery(
+      id: 'd_johor_murals',
+      title: 'Pasar Karat Heritage Street Murals',
+      category: CulturalCategory.murals,
+      location: 'Jalan Segget, Johor Bahru, Johor, Malaysia',
+      description:
+          'Large-scale urban wall paintings illustrating early Gambier and Pepper traders, traditional river boats, and multiracial street life of old Johor.',
+      latitude: 1.4589,
+      longitude: 103.7635,
+      imageUrl: '', // Empty image link ready for insert image
+      isApproved: true,
+      contributor: 'Suresh Rao',
+      culturalSignificance:
+          'Revitalizing old Johor Bahru riverside alleys through public community storytelling and youth arts.',
+    ),
+    // 4. Johor Bahru, Malaysia (Crafts)
+    Discovery(
+      id: 'd_johor_crafts',
+      title: 'Kompleks Kraf Johor (Johor Craft Complex)',
+      category: CulturalCategory.crafts,
+      location: 'Jalan Cenderasari, Larkin, Johor Bahru, Johor, Malaysia',
+      description:
+          'Dedicated artisan center showcasing authentic Johor songket weaving, copper tooling, wood carving, and traditional Zapin musical instruments.',
+      latitude: 1.4932,
+      longitude: 103.7431,
+      imageUrl: '', // Empty image link ready for insert image
+      isApproved: true,
+      contributor: 'Nurul Huda',
+      culturalSignificance:
+          'Preserving ancient Malay royal court weaving and Johor Zapin folk heritage for future generations.',
+    ),
+    // 5. Global: Rome Colosseum
     Discovery(
       id: 'd_rome',
       title: 'Colosseum',
@@ -196,13 +251,13 @@ class Discovery {
           'An iconic ancient amphitheatre and a symbol of Roman history and culture, completed in 80 AD under Emperor Titus.',
       latitude: 41.8902,
       longitude: 12.4922,
-      imageUrl:
-          'https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=700&q=80',
+      imageUrl: '', // Empty image link ready for insert image
       isApproved: true,
       contributor: 'Marco R.',
       culturalSignificance:
           'World Heritage marvel symbolizing Roman engineering, imperial spectacles, and civic identity.',
     ),
+    // 6. Global: Tokyo Food
     Discovery(
       id: 'd_tokyo_food',
       title: 'Tsukiji Ramen & Seafood Alley',
@@ -212,29 +267,29 @@ class Discovery {
           'Historic food lane featuring century-old broth recipes, fresh sashimi bowls, and artisan tamagoyaki prepared before your eyes.',
       latitude: 35.6655,
       longitude: 139.7708,
-      imageUrl:
-          'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=700&q=80',
+      imageUrl: '', // Empty image link ready for insert image
       isApproved: true,
       contributor: 'Kenji Takahashi',
       culturalSignificance:
           'The historic culinary belly of Tokyo preserving multi-generational culinary master crafts.',
     ),
+    // 7. Global: Shoreditch Murals
     Discovery(
       id: 'd_shoreditch_murals',
       title: 'Shoreditch Cultural Murals',
       category: CulturalCategory.murals,
       location: 'Brick Lane, London, UK',
       description:
-          'Vibrant street murals celebrating multicultural unity, diaspora stories, and contemporary cultural resistance.',
+          'Vibrant street murals celebrating multicultural unity, diaspora stories, and contemporary cultural vitality.',
       latitude: 51.5235,
       longitude: -0.0768,
-      imageUrl:
-          'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=700&q=80',
+      imageUrl: '', // Empty image link ready for insert image
       isApproved: true,
       contributor: 'Elena K.',
       culturalSignificance:
           'A globally renowned open-air public art sanctuary reflecting East London migration and creative vitality.',
     ),
+    // 8. Global: Kyoto Crafts
     Discovery(
       id: 'd_kyoto_crafts',
       title: 'Kiyomizu Pottery & Bamboo Craft',
@@ -244,76 +299,11 @@ class Discovery {
           'Traditional stoneware studios and bamboo weaving masters continuing Edo period tea ceremony utensils.',
       latitude: 34.9949,
       longitude: 135.7850,
-      imageUrl:
-          'https://images.unsplash.com/photo-1590736969955-71cc94801759?auto=format&fit=crop&w=700&q=80',
+      imageUrl: '', // Empty image link ready for insert image
       isApproved: true,
       contributor: 'Aoi Tanaka',
       culturalSignificance:
           'Intangible cultural heritage of Japanese craftsmanship centered around mindful Zen aesthetics.',
-    ),
-    Discovery(
-      id: 'd_sibu_heritage',
-      title: 'Sibu Heritage Lane & Pagoda',
-      category: CulturalCategory.heritage,
-      location: 'Jalan Temple, Sibu, Malaysia',
-      description:
-          'A charming historic riverside street featuring preserved colonial-era shophouses, traditional Foochow craftsmanship, and the 7-tier Tua Pek Kong Pagoda.',
-      latitude: 2.2878,
-      longitude: 111.8305,
-      imageUrl:
-          'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?auto=format&fit=crop&w=700&q=80',
-      isApproved: true,
-      contributor: 'Mei Ling Wong',
-      culturalSignificance:
-          'One of the earliest trade settlements established along the Rajang River blending Foochow and Dayak traditions.',
-    ),
-    Discovery(
-      id: 'd_sibu_food',
-      title: 'Ah Huat Clay-Oven Kompia',
-      category: CulturalCategory.food,
-      location: 'Market Road, Sibu, Malaysia',
-      description:
-          'Crispy clay-oven baked sesame bagels stuffed with savory minced meat gravy, baked daily using century-old wood-fired earthen jars.',
-      latitude: 2.2895,
-      longitude: 111.8290,
-      imageUrl:
-          'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=700&q=80',
-      isApproved: true,
-      contributor: 'David Lau',
-      culturalSignificance:
-          'Known as the "Foochow Bagel", historically baked for soldiers traveling across rivers.',
-    ),
-    Discovery(
-      id: 'd_oaxaca_crafts',
-      title: 'Oaxaca Alebrijes & Loom Weaving',
-      category: CulturalCategory.crafts,
-      location: 'San Martin Tilcajete, Oaxaca, Mexico',
-      description:
-          'Folk art workshops hand-carving fantastical copal wood creatures and dyeing raw wool rugs using cochineal bugs and natural pomegranate.',
-      latitude: 17.0608,
-      longitude: -96.7256,
-      imageUrl:
-          'https://images.unsplash.com/photo-1582560475093-ba66accbc424?auto=format&fit=crop&w=700&q=80',
-      isApproved: true,
-      contributor: 'Mateo Hernandez',
-      culturalSignificance:
-          'Zapotec indigenous craft traditions passed down through ancestral village guilds.',
-    ),
-    Discovery(
-      id: 'd_penang_murals',
-      title: 'Children on a Bicycle Mural',
-      category: CulturalCategory.murals,
-      location: 'Armenian Street, George Town, Malaysia',
-      description:
-          'Internationally acclaimed wall art painted on historic lime-washed shophouse walls, celebrating playful innocence and everyday street life.',
-      latitude: 5.4141,
-      longitude: 100.3364,
-      imageUrl:
-          'https://images.unsplash.com/photo-1561055657-b9e0bf0fa360?auto=format&fit=crop&w=700&q=80',
-      isApproved: true,
-      contributor: 'Sara Lim',
-      culturalSignificance:
-          'UNESCO World Heritage cultural landmark bridging historic preservation with creative street culture.',
     ),
   ];
 }
