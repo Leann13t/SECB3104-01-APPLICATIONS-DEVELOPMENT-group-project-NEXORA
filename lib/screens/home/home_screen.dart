@@ -135,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       child: const Center(
-                        child: Text('📍', style: TextStyle(fontSize: 15)),
+                        child: Icon(Icons.location_on_rounded, size: 15),
                       ),
                     ),
                   ],
@@ -385,9 +385,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                           child: Center(
-                            child: Text(
-                              category.emoji,
-                              style: const TextStyle(fontSize: 28),
+                            child: Icon(
+                              category.icon,
+                              size: 28,
+                              color: category.textColor,
                             ),
                           ),
                         ),
@@ -441,7 +442,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Row(
               children: [
-                const Text('🗺️', style: TextStyle(fontSize: 20)),
+                const Icon(Icons.map_rounded, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   'Explore Cultural Map',
@@ -498,22 +499,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   const Positioned(
                     left: 30,
                     top: 18,
-                    child: Text('🏠', style: TextStyle(fontSize: 18)),
+                    child: Icon(Icons.home_rounded, size: 18),
                   ),
                   const Positioned(
                     right: 35,
                     top: 22,
-                    child: Text('🏛️', style: TextStyle(fontSize: 20)),
+                    child: Icon(Icons.account_balance_rounded, size: 20),
                   ),
                   const Positioned(
                     left: 80,
                     bottom: 16,
-                    child: Text('🍜', style: TextStyle(fontSize: 18)),
+                    child: Icon(Icons.restaurant_rounded, size: 18),
                   ),
                   const Positioned(
                     right: 80,
                     bottom: 20,
-                    child: Text('🎨', style: TextStyle(fontSize: 18)),
+                    child: Icon(Icons.palette_rounded, size: 18),
                   ),
 
                   // Central Smiling Pin Mascot
@@ -535,7 +536,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ],
                       ),
-                      child: const Text('📍', style: TextStyle(fontSize: 20)),
+                      child: const Icon(Icons.location_on_rounded, size: 20),
                     ),
                   ),
                 ],
@@ -832,23 +833,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(16),
                 ),
-                child: item.imageUrl != null
+                child: item.hasCustomImage
                     ? Image.network(
-                        item.imageUrl!,
+                        item.imageUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => Center(
-                          child: Text(
-                            item.category.emoji,
-                            style: const TextStyle(fontSize: 44),
-                          ),
-                        ),
+                        errorBuilder: (_, _, _) => const SizedBox.expand(),
                       )
-                    : Center(
-                        child: Text(
-                          item.category.emoji,
-                          style: const TextStyle(fontSize: 44),
-                        ),
-                      ),
+                    : const SizedBox.expand(),
               ),
             ),
 
@@ -986,9 +977,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     child: Center(
-                      child: Text(
-                        item.category.emoji,
-                        style: const TextStyle(fontSize: 26),
+                      child: Icon(
+                        item.category.icon,
+                        size: 26,
+                        color: item.category.textColor,
                       ),
                     ),
                   ),
