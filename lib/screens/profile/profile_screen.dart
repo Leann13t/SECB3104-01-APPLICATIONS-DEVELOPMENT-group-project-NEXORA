@@ -17,28 +17,28 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isGirlAvatar = true;
 
-  // Mock user contributions (clearly marked placeholder data for demo)
+  // User cultural place contributions (clearly marked placeholder data for demo)
   final List<Map<String, dynamic>> _mySubmissions = [
     {
-      'title': 'Ah Huat Sibu Kompia',
-      'category': CulturalCategory.food,
-      'location': 'Market Road, Sibu',
+      'title': 'Colosseum Ancient Arch',
+      'category': CulturalCategory.heritage,
+      'location': 'Piazza del Colosseo, Rome',
       'status': 'Approved',
       'xp': '+50 XP',
       'date': 'Yesterday',
     },
     {
-      'title': 'Tua Pek Kong Pagoda',
-      'category': CulturalCategory.heritage,
-      'location': 'Jalan Temple, Sibu',
+      'title': 'Ah Huat Clay-Oven Kompia',
+      'category': CulturalCategory.food,
+      'location': 'Market Road, Sibu',
       'status': 'Approved',
       'xp': '+50 XP',
       'date': '3 days ago',
     },
     {
-      'title': 'Rajang Riverfront Street Art',
+      'title': 'Shoreditch Brick Lane Murals',
       'category': CulturalCategory.murals,
-      'location': 'Waterfront Lane, Sibu',
+      'location': 'Brick Lane, London',
       'status': 'Pending Review',
       'xp': 'Pending',
       'date': 'Just now',
