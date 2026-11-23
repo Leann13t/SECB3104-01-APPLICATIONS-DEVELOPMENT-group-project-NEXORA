@@ -13,98 +13,303 @@ enum CreatureRarity {
         return 'Legendary';
     }
   }
+
+  String get badgeText {
+    switch (this) {
+      case CreatureRarity.common:
+        return '★ Common';
+      case CreatureRarity.rare:
+        return '★ Rare';
+      case CreatureRarity.legendary:
+        return '👑 Legendary';
+    }
+  }
 }
 
 class CulturalCreature {
   final String id;
   final String name;
   final String title;
+  final String country;
+  final String countryFlag;
   final String culturalOrigin;
   final String eligibleLocation;
+  final double latitude;
+  final double longitude;
   final CreatureRarity rarity;
   final String emoji;
+  final String? illustrationUrl;
   final bool isCollected;
+  final DateTime? collectedAt;
   final String lore;
 
   const CulturalCreature({
     required this.id,
     required this.name,
     required this.title,
+    required this.country,
+    required this.countryFlag,
     required this.culturalOrigin,
     required this.eligibleLocation,
+    required this.latitude,
+    required this.longitude,
     required this.rarity,
     required this.emoji,
+    this.illustrationUrl,
     this.isCollected = false,
+    this.collectedAt,
     required this.lore,
   });
 
-  // Placeholder data clearly marked for development & prototype testing
-  static List<CulturalCreature> get placeholderCreatures => const [
-    CulturalCreature(
-      id: 'c1',
-      name: 'Paku Midin Sprite',
-      title: 'Forest Forager',
-      culturalOrigin: 'Dayak Jungle Heritage',
-      eligibleLocation: 'Sibu Central Market',
-      rarity: CreatureRarity.common,
-      emoji: '🌿',
-      isCollected: true,
-      lore: 'Born from wild fiddlehead ferns gathered along misty rainforest riverbanks.',
-    ),
-    CulturalCreature(
-      id: 'c2',
-      name: 'Kompia Baker Kobold',
-      title: 'Hearth Guardian',
-      culturalOrigin: 'Foochow Culinary Tradition',
-      eligibleLocation: 'Ah Huat Clay Oven Bakery',
+  CulturalCreature copyWith({
+    String? id,
+    String? name,
+    String? title,
+    String? country,
+    String? countryFlag,
+    String? culturalOrigin,
+    String? eligibleLocation,
+    double? latitude,
+    double? longitude,
+    CreatureRarity? rarity,
+    String? emoji,
+    String? illustrationUrl,
+    bool? isCollected,
+    DateTime? collectedAt,
+    String? lore,
+  }) {
+    return CulturalCreature(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      title: title ?? this.title,
+      country: country ?? this.country,
+      countryFlag: countryFlag ?? this.countryFlag,
+      culturalOrigin: culturalOrigin ?? this.culturalOrigin,
+      eligibleLocation: eligibleLocation ?? this.eligibleLocation,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      rarity: rarity ?? this.rarity,
+      emoji: emoji ?? this.emoji,
+      illustrationUrl: illustrationUrl ?? this.illustrationUrl,
+      isCollected: isCollected ?? this.isCollected,
+      collectedAt: collectedAt ?? this.collectedAt,
+      lore: lore ?? this.lore,
+    );
+  }
+
+  factory CulturalCreature.fromMap(Map<String, dynamic> map) {
+    CreatureRarity rarity = CreatureRarity.common;
+    final rStr = (map['rarity'] as String?)?.toLowerCase() ?? '';
+    if (rStr == 'rare') {
+      rarity = CreatureRarity.rare;
+    } else if (rStr == 'legendary') {
+      rarity = CreatureRarity.legendary;
+    }
+
+    return CulturalCreature(
+      id: map['id']?.toString() ?? '',
+      name: map['name']?.toString() ?? 'Cultural Creature',
+      title: map['title']?.toString() ?? 'Wandering Spirit',
+      country: map['country']?.toString() ?? 'Global',
+      countryFlag: map['country_flag']?.toString() ?? '🌐',
+      culturalOrigin: map['cultural_origin']?.toString() ?? '',
+      eligibleLocation: map['eligible_location']?.toString() ?? '',
+      latitude: (map['latitude'] as num?)?.toDouble() ?? 0.0,
+      longitude: (map['longitude'] as num?)?.toDouble() ?? 0.0,
+      rarity: rarity,
+      emoji: map['emoji']?.toString() ?? '✨',
+      illustrationUrl: map['illustration_url']?.toString(),
+      isCollected: map['is_collected'] == true,
+      collectedAt: map['collected_at'] != null
+          ? DateTime.tryParse(map['collected_at'].toString())
+          : null,
+      lore: map['lore']?.toString() ?? '',
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'title': title,
+      'country': country,
+      'country_flag': countryFlag,
+      'cultural_origin': culturalOrigin,
+      'eligible_location': eligibleLocation,
+      'latitude': latitude,
+      'longitude': longitude,
+      'rarity': rarity.name,
+      'emoji': emoji,
+      'illustration_url': illustrationUrl,
+      'is_collected': isCollected,
+      'collected_at': collectedAt?.toIso8601String(),
+      'lore': lore,
+    };
+  }
+
+  // Curated global Hunt collectibles clearly marked as development sample data
+  static List<CulturalCreature> get placeholderCreatures => curatedGlobalCreatures;
+
+  static List<CulturalCreature> get curatedGlobalCreatures => [
+    const CulturalCreature(
+      id: 'c_taiyaki',
+      name: 'Taiyaki Spirit',
+      title: 'Sweet Sea Spirit',
+      country: 'Japan',
+      countryFlag: '🇯🇵',
+      culturalOrigin: 'Edo Tokyo Street Confections',
+      eligibleLocation: 'Tsukiji Market & Asakusa, Tokyo',
+      latitude: 35.6655,
+      longitude: 139.7708,
       rarity: CreatureRarity.rare,
-      emoji: '🥯',
+      emoji: '🐟',
       isCollected: true,
-      lore: 'Inhabits traditional charcoal clay urns, blessing dough with golden crispness.',
+      lore:
+          'Inspired by Japan’s iconic fish-shaped waffle cake filled with sweet red bean paste. Legend says holding one brings prosperity and warm river breezes.',
     ),
-    CulturalCreature(
-      id: 'c3',
-      name: 'Kenyah Hornbill Guardian',
-      title: 'Sky Totem',
-      culturalOrigin: 'Orang Ulu Ancestral Craft',
-      eligibleLocation: 'Sarawak River Waterfront Heritage',
+    const CulturalCreature(
+      id: 'c_maneki',
+      name: 'Lucky Maneki Cat',
+      title: 'Fortune Guardian',
+      country: 'Japan',
+      countryFlag: '🇯🇵',
+      culturalOrigin: 'Gotokuji Edo Folk Heritage',
+      eligibleLocation: 'Gotokuji Temple, Tokyo',
+      latitude: 35.6480,
+      longitude: 139.6486,
+      rarity: CreatureRarity.legendary,
+      emoji: '🐱',
+      isCollected: true,
+      lore:
+          'A beloved beckoning feline carrying a Sakura fan and golden bell, celebrated since the 17th century for guiding travelers and blessing homes with good fortune.',
+    ),
+    const CulturalCreature(
+      id: 'c_burger',
+      name: 'Cowboy Slider',
+      title: 'Desert Trail Guide',
+      country: 'USA',
+      countryFlag: '🇺🇸',
+      culturalOrigin: 'Route 66 American Diner Tradition',
+      eligibleLocation: 'Route 66 Historic Mile, Arizona',
+      latitude: 35.1983,
+      longitude: -111.6513,
+      rarity: CreatureRarity.rare,
+      emoji: '🤠',
+      isCollected: true,
+      lore:
+          'Wearing a miniature Stetson hat amidst desert sagebrush, this cheery wanderer honors classic roadside drive-ins and open road explorer heritage.',
+    ),
+    const CulturalCreature(
+      id: 'c_bao',
+      name: 'Bao Bao Dumpling',
+      title: 'Steamer Joy',
+      country: 'China',
+      countryFlag: '🇨🇳',
+      culturalOrigin: 'Jiangnan Dim Sum & Bamboo Steamers',
+      eligibleLocation: 'Yuyuan Old Street, Shanghai',
+      latitude: 31.2272,
+      longitude: 121.4922,
+      rarity: CreatureRarity.common,
+      emoji: '🥟',
+      isCollected: true,
+      lore:
+          'Peeking out from aromatic woven bamboo steamers, Bao Bao embodies familial warmth and festival reunion feasts celebrated under glowing red lanterns.',
+    ),
+    const CulturalCreature(
+      id: 'c_elephant',
+      name: 'Royal Chang',
+      title: 'Sacred Tusker',
+      country: 'Thailand',
+      countryFlag: '🇹🇭',
+      culturalOrigin: 'Siam Royal Temple Ceremonies',
+      eligibleLocation: 'Wat Arun River Temple, Bangkok',
+      latitude: 13.7437,
+      longitude: 100.4888,
+      rarity: CreatureRarity.rare,
+      emoji: '🐘',
+      isCollected: true,
+      lore:
+          'Adorned in ornate gold filigree and fresh lotus blossoms, Chang symbolizes wisdom, royal peace, and spiritual guardian blessings along the Chao Phraya River.',
+    ),
+    const CulturalCreature(
+      id: 'c_owl',
+      name: 'Athena’s Owl',
+      title: 'Wisdom Totem',
+      country: 'Greece',
+      countryFlag: '🇬🇷',
+      culturalOrigin: 'Ancient Hellenic Philosophy & Coins',
+      eligibleLocation: 'Acropolis Parthenon, Athens',
+      latitude: 37.9715,
+      longitude: 23.7267,
+      rarity: CreatureRarity.common,
+      emoji: '🦉',
+      isCollected: true,
+      lore:
+          'Crowned with olive laurels above ancient marble columns, this solemn little owl accompanied philosophers through classical dialogues on democracy and truth.',
+    ),
+    const CulturalCreature(
+      id: 'c_nandi',
+      name: 'Nandi Sentinel',
+      title: 'Temple Protector',
+      country: 'India',
+      countryFlag: '🇮🇳',
+      culturalOrigin: 'Dravidian Sacred Temple Sculpture',
+      eligibleLocation: 'Meenakshi Amman Gopuram, Madurai',
+      latitude: 9.9195,
+      longitude: 78.1193,
+      rarity: CreatureRarity.rare,
+      emoji: '🐂',
+      isCollected: false,
+      lore:
+          'Carved from timeless granite and garlanded in marigolds, this noble bull guardian protects sacred shrines and blesses travelers with steadfast devotion.',
+    ),
+    const CulturalCreature(
+      id: 'c_moose',
+      name: 'Timber Moose',
+      title: 'Boreal Wanderer',
+      country: 'Canada',
+      countryFlag: '🇨🇦',
+      culturalOrigin: 'First Nations & Northern Forest Heritage',
+      eligibleLocation: 'Banff Bow Valley Heritage Woods, Alberta',
+      latitude: 51.1784,
+      longitude: -115.5708,
+      rarity: CreatureRarity.common,
+      emoji: '🦌',
+      isCollected: false,
+      lore:
+          'Roaming deep pine needles and snowmelt streams, the gentle Timber Moose embodies northern resilience and quiet harmony with primeval wilderness.',
+    ),
+    const CulturalCreature(
+      id: 'c_hornbill',
+      name: 'Kenyah Hornbill Totem',
+      title: 'Sky Messenger',
+      country: 'Malaysia',
+      countryFlag: '🇲🇾',
+      culturalOrigin: 'Borneo Orang Ulu & Dayak Ancestry',
+      eligibleLocation: 'Rajang Waterfront, Sibu, Sarawak',
+      latitude: 2.2889,
+      longitude: 111.8289,
       rarity: CreatureRarity.legendary,
       emoji: '🦜',
-      isCollected: true,
-      lore: 'A revered spiritual creature carrying sacred blessings across the great Rajang river.',
+      isCollected: false,
+      lore:
+          'Known as the Rhinoceros Hornbill, this sacred bird bridges earthly river life with the heavens, depicted in ancestral Kenyah and Iban woodcarvings.',
     ),
-    CulturalCreature(
-      id: 'c4',
-      name: 'Sambal Laksa Imp',
-      title: 'Spiced Ember',
-      culturalOrigin: 'Sarawak Spices & Sambal Belacan',
-      eligibleLocation: 'Taman Sentosa Laksa Haven',
+    const CulturalCreature(
+      id: 'c_croissant',
+      name: 'Croissant Petit',
+      title: 'Golden Flake',
+      country: 'France',
+      countryFlag: '🇫🇷',
+      culturalOrigin: 'Parisian Boulangerie Craft',
+      eligibleLocation: 'Montmartre Hillside Bakeries, Paris',
+      latitude: 48.8867,
+      longitude: 2.3431,
       rarity: CreatureRarity.common,
-      emoji: '🌶️',
+      emoji: '🥐',
       isCollected: false,
-      lore: 'Carries fragrant tamarind, coriander seeds, and fiery chili embers in its shell.',
-    ),
-    CulturalCreature(
-      id: 'c5',
-      name: 'Rattan Weaver Nymph',
-      title: 'Basket Artisan',
-      culturalOrigin: 'Iban Pua Kumbu & Weaving',
-      eligibleLocation: 'Traditional Craft Corner',
-      rarity: CreatureRarity.rare,
-      emoji: '🧺',
-      isCollected: false,
-      lore: 'Weaves river reeds into protective talismans during harvest festivals.',
-    ),
-    CulturalCreature(
-      id: 'c6',
-      name: 'Dragon River Spirit',
-      title: 'Wharf Protector',
-      culturalOrigin: 'Rajang Riverine Culture',
-      eligibleLocation: 'Tua Pek Kong Waterfront',
-      rarity: CreatureRarity.legendary,
-      emoji: '🐉',
-      isCollected: false,
-      lore: 'Guards the old wooden wharves and grants calm currents to trading express boats.',
+      lore:
+          'Laminated with French churned butter and baked to a golden crescent curve, this joyful spirit celebrates café morning culture and cobblestone strolls.',
     ),
   ];
 }

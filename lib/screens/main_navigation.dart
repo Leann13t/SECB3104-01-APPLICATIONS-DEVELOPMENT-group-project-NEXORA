@@ -27,7 +27,7 @@ class _MainNavigationState extends State<MainNavigation> {
   Widget build(BuildContext context) {
     final screens = [
       HomeScreen(onNavigateTab: _onSelectTab),
-      const MapScreen(),
+      MapScreen(onNavigateTab: _onSelectTab),
       HuntScreen(onNavigateTab: _onSelectTab),
       UploadScreen(onSubmissionSuccess: () => _onSelectTab(4)),
       ProfileScreen(onNavigateTab: _onSelectTab),
