@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' hide MapType;
+import 'package:latlong2/latlong.dart' show LatLng;
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/models/creature_model.dart';
@@ -24,46 +25,50 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  GoogleMapController? _mapController;
+  final MapController _mapController = MapController();
   final TextEditingController _searchController = TextEditingController();
 
   CulturalCategory? _selectedCategory;
   Discovery? _selectedDiscovery;
   String _searchQuery = '';
 
-  // Mode: Default to Interactive Prototype Map (false) to ensure instant, reliable loading
-  // without Google Maps API key or billing blocks, perfectly matching the prototype image!
-  bool _useGoogleMaps = false;
-  bool _hasMapInitError = false;
+  bool _usePrototypeMap = false;
+  bool _mapReady = false;
 
   // Interactive Prototype Map Pan & Zoom states
   Offset _mapPanOffset = Offset.zero;
   double _prototypeMapScale = 1.0;
 
-  // Live Location: Default explicitly to Johor Bahru, Malaysia (1.4927, 103.7414)
-  // so it NEVER defaults to America or Mountain View!
+  // Start centered in Johor Bahru, but show a user marker only after GPS succeeds.
   LatLng _liveLocation = const LatLng(1.4927, 103.7414);
-  String _locationStatusText = 'Johor, Malaysia';
+  String _locationStatusText = 'Finding your location...';
   bool _isLocatingLiveGps = false;
+  bool _hasLiveLocation = false;
 
   // Supabase community discoveries (strictly approved only!)
   List<Discovery> _discoveries = Discovery.placeholderDiscoveries;
-  bool _isLoadingSupabaseData = false;
-  bool _isUsingSupabaseData = false;
 
   // Hunt proximity feature
   bool _isNearHuntLocation = false;
   CulturalCreature? _nearbyCreature;
-  final Set<String> _collectedCreatureIds = {'c_taiyaki', 'c_maneki', 'c_burger', 'c_bao', 'c_elephant', 'c_owl'};
+  final Set<String> _collectedCreatureIds = {
+    'c_taiyaki',
+    'c_maneki',
+    'c_burger',
+    'c_bao',
+    'c_elephant',
+    'c_owl',
+  };
   final Set<String> _bookmarkedDiscoveryIds = {};
 
-  double _currentGoogleZoom = 15.0;
+  double _currentZoom = 15.0;
 
   @override
   void initState() {
     super.initState();
     // Default to the first local discovery in Johor, Malaysia
-    _selectedDiscovery = widget.initialSelectedDiscovery ??
+    _selectedDiscovery =
+        widget.initialSelectedDiscovery ??
         _discoveries.firstWhere(
           (d) => d.id == 'd_johor_heritage',
           orElse: () => _discoveries.first,
@@ -76,7 +81,6 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   void dispose() {
-    _mapController?.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -86,70 +90,71 @@ class _MapScreenState extends State<MapScreen> {
   // Queries real device sensors via Geolocator.
   // ---------------------------------------------------------------------------
   Future<void> _detectLiveGpsLocation() async {
-    setState(() => _isLocatingLiveGps = true);
+    if (mounted) {
+      setState(() {
+        _isLocatingLiveGps = true;
+        _locationStatusText = 'Finding your location...';
+      });
+    }
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         if (mounted) {
           setState(() {
-            _locationStatusText = 'Johor Bahru, Malaysia (GPS off)';
+            _locationStatusText = 'Location services are turned off';
             _isLocatingLiveGps = false;
+            _hasLiveLocation = false;
           });
         }
         return;
       }
 
-      LocationPermission permission = await Geolocator.checkPermission();
+      var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          if (mounted) {
-            setState(() {
-              _locationStatusText = 'Johor Bahru, Malaysia';
-              _isLocatingLiveGps = false;
-            });
-          }
-          return;
-        }
       }
 
-      if (permission == LocationPermission.deniedForever) {
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
         if (mounted) {
           setState(() {
-            _locationStatusText = 'Johor Bahru, Malaysia';
+            _locationStatusText = permission == LocationPermission.deniedForever
+                ? 'Location permission is disabled in settings'
+                : 'Location permission denied';
             _isLocatingLiveGps = false;
+            _hasLiveLocation = false;
           });
         }
         return;
       }
 
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 4),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 10),
+        ),
       );
 
       if (mounted) {
         setState(() {
           _liveLocation = LatLng(position.latitude, position.longitude);
           _locationStatusText =
-              'Live GPS: ${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)} (Johor)';
+              'Live location: ${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}';
           _isLocatingLiveGps = false;
+          _hasLiveLocation = true;
         });
 
-        if (_useGoogleMaps && _mapController != null) {
-          _mapController!.animateCamera(
-            CameraUpdate.newLatLngZoom(_liveLocation, 16.0),
-          );
+        if (!_usePrototypeMap && _mapReady) {
+          _mapController.move(_liveLocation, 16.0);
         }
       }
     } catch (e) {
-      debugPrint('Live GPS error (using Johor, Malaysia defaults): $e');
+      debugPrint('Live GPS error: $e');
       if (mounted) {
         setState(() {
-          // Default to Johor Bahru, Malaysia
-          _liveLocation = const LatLng(1.4927, 103.7414);
-          _locationStatusText = 'Johor Bahru, Malaysia';
+          _locationStatusText = 'Unable to get your location';
           _isLocatingLiveGps = false;
+          _hasLiveLocation = false;
         });
       }
     }
@@ -159,7 +164,6 @@ class _MapScreenState extends State<MapScreen> {
   // Supabase Data Fetching: Strictly Approved Records Only (is_approved == true)
   // ---------------------------------------------------------------------------
   Future<void> _fetchApprovedSupabaseDiscoveries() async {
-    setState(() => _isLoadingSupabaseData = true);
     try {
       final client = Supabase.instance.client;
       final response = await client
@@ -177,16 +181,11 @@ class _MapScreenState extends State<MapScreen> {
         if (loaded.isNotEmpty) {
           setState(() {
             _discoveries = loaded;
-            _isUsingSupabaseData = true;
           });
         }
       }
     } catch (e) {
       debugPrint('Supabase discovery query note (using curated dataset): $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isLoadingSupabaseData = false);
-      }
     }
   }
 
@@ -200,7 +199,9 @@ class _MapScreenState extends State<MapScreen> {
             .eq('user_id', user.id);
 
         if (response.isNotEmpty && mounted) {
-          final ids = response.map((r) => r['collectible_id'].toString()).toSet();
+          final ids = response
+              .map((r) => r['collectible_id'].toString())
+              .toSet();
           setState(() {
             _collectedCreatureIds.addAll(ids);
           });
@@ -221,77 +222,84 @@ class _MapScreenState extends State<MapScreen> {
       final matchesSearch =
           _searchQuery.isEmpty ||
           discovery.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          discovery.location.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          discovery.description.toLowerCase().contains(_searchQuery.toLowerCase());
+          discovery.location.toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          ) ||
+          discovery.description.toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          );
       return matchesCategory && matchesSearch;
     }).toList();
   }
 
   // ---------------------------------------------------------------------------
-  // Google Map Markers (When Google Map mode is enabled)
+  // Map Markers
   // ---------------------------------------------------------------------------
-  Set<Marker> _buildGoogleMapMarkers() {
-    final markers = <Marker>{};
+  List<Marker> _buildMapMarkers() {
+    final markers = <Marker>[];
 
     for (final discovery in _filteredDiscoveries) {
       final lat = discovery.latitude ?? _liveLocation.latitude;
       final lng = discovery.longitude ?? _liveLocation.longitude;
-      final isSelected = _selectedDiscovery?.id == discovery.id;
-
-      double hue;
-      switch (discovery.category) {
-        case CulturalCategory.food:
-          hue = BitmapDescriptor.hueOrange;
-          break;
-        case CulturalCategory.heritage:
-          hue = BitmapDescriptor.hueCyan;
-          break;
-        case CulturalCategory.murals:
-          hue = BitmapDescriptor.hueRose;
-          break;
-        case CulturalCategory.crafts:
-          hue = BitmapDescriptor.hueYellow;
-          break;
-      }
 
       markers.add(
         Marker(
-          markerId: MarkerId(discovery.id),
-          position: LatLng(lat, lng),
-          icon: BitmapDescriptor.defaultMarkerWithHue(hue),
-          infoWindow: InfoWindow.noText,
-          zIndexInt: isSelected ? 3 : 1,
-          onTap: () {
-            setState(() {
-              _selectedDiscovery = discovery;
-            });
-            _centerOnLocation(lat, lng);
-          },
+          point: LatLng(lat, lng),
+          width: 44,
+          height: 48,
+          child: GestureDetector(
+            onTap: () {
+              setState(() => _selectedDiscovery = discovery);
+              _centerOnLocation(lat, lng);
+            },
+            child: Icon(
+              Icons.location_on_rounded,
+              color: discovery.category.borderColor,
+              size: 42,
+            ),
+          ),
         ),
       );
     }
 
-    // User's Live Position Marker
-    markers.add(
-      Marker(
-        markerId: const MarkerId('user_live_location'),
-        position: _liveLocation,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
-        zIndexInt: 4,
-        infoWindow: const InfoWindow(title: 'You are here (Johor, Malaysia)'),
-      ),
-    );
+    if (_hasLiveLocation) {
+      markers.add(
+        Marker(
+          point: _liveLocation,
+          width: 42,
+          height: 42,
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0x333B82F6),
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFF3B82F6), width: 2),
+            ),
+            child: const Center(
+              child: Icon(
+                Icons.my_location_rounded,
+                color: Color(0xFF2563EB),
+                size: 22,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     if (_isNearHuntLocation && _nearbyCreature != null) {
       markers.add(
         Marker(
-          markerId: MarkerId('hunt_${_nearbyCreature!.id}'),
-          position: LatLng(_nearbyCreature!.latitude, _nearbyCreature!.longitude),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueMagenta),
-          zIndexInt: 5,
-          onTap: () {
-            _showHuntEncounterModal(_nearbyCreature!);
-          },
+          point: LatLng(_nearbyCreature!.latitude, _nearbyCreature!.longitude),
+          width: 42,
+          height: 42,
+          child: GestureDetector(
+            onTap: () => _showHuntEncounterModal(_nearbyCreature!),
+            child: const Icon(
+              Icons.pets_rounded,
+              color: Color(0xFFD98BA8),
+              size: 38,
+            ),
+          ),
         ),
       );
     }
@@ -303,49 +311,55 @@ class _MapScreenState extends State<MapScreen> {
   // Camera & Navigation Actions
   // ---------------------------------------------------------------------------
   void _centerOnLocation(double lat, double lng, {double zoom = 16.0}) {
-    _currentGoogleZoom = zoom;
-    if (_mapController != null) {
-      _mapController!.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(target: LatLng(lat, lng), zoom: zoom),
-        ),
-      );
+    _currentZoom = zoom;
+    if (!_usePrototypeMap && _mapReady) {
+      _mapController.move(LatLng(lat, lng), zoom);
     }
   }
 
   void _zoomIn() {
-    if (_useGoogleMaps) {
-      setState(() => _currentGoogleZoom = (_currentGoogleZoom + 1).clamp(3.0, 20.0));
-      _mapController?.animateCamera(CameraUpdate.zoomIn());
-    } else {
-      setState(() => _prototypeMapScale = (_prototypeMapScale + 0.2).clamp(0.7, 2.5));
+    if (_usePrototypeMap) {
+      setState(
+        () => _prototypeMapScale = (_prototypeMapScale + 0.2).clamp(0.7, 2.5),
+      );
+    } else if (_mapReady) {
+      setState(() => _currentZoom = (_currentZoom + 1).clamp(3.0, 20.0));
+      _mapController.move(_mapController.camera.center, _currentZoom);
     }
   }
 
   void _zoomOut() {
-    if (_useGoogleMaps) {
-      setState(() => _currentGoogleZoom = (_currentGoogleZoom - 1).clamp(3.0, 20.0));
-      _mapController?.animateCamera(CameraUpdate.zoomOut());
-    } else {
-      setState(() => _prototypeMapScale = (_prototypeMapScale - 0.2).clamp(0.7, 2.5));
+    if (_usePrototypeMap) {
+      setState(
+        () => _prototypeMapScale = (_prototypeMapScale - 0.2).clamp(0.7, 2.5),
+      );
+    } else if (_mapReady) {
+      setState(() => _currentZoom = (_currentZoom - 1).clamp(3.0, 20.0));
+      _mapController.move(_mapController.camera.center, _currentZoom);
     }
   }
 
-  void _recenterToCurrentLocation() {
-    _detectLiveGpsLocation();
+  Future<void> _recenterToCurrentLocation() async {
+    await _detectLiveGpsLocation();
+    if (!mounted) return;
 
     setState(() {
       _mapPanOffset = Offset.zero;
       _prototypeMapScale = 1.0;
     });
 
-    if (_useGoogleMaps && _mapController != null) {
-      _centerOnLocation(_liveLocation.latitude, _liveLocation.longitude, zoom: 16.0);
+    if (!_usePrototypeMap && _mapReady && _hasLiveLocation) {
+      _currentZoom = 16.0;
+      _mapController.move(_liveLocation, _currentZoom);
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Map centered on $_locationStatusText'),
+        content: Text(
+          _hasLiveLocation
+              ? 'Map centered on your live location'
+              : _locationStatusText,
+        ),
         backgroundColor: AppColors.primary,
         duration: const Duration(seconds: 2),
       ),
@@ -428,7 +442,9 @@ class _MapScreenState extends State<MapScreen> {
       Navigator.of(context, rootNavigator: true).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${creature.name} (${creature.country}) added to your collection'),
+          content: Text(
+            '${creature.name} (${creature.country}) added to your collection',
+          ),
           backgroundColor: AppColors.primary,
           duration: const Duration(seconds: 3),
         ),
@@ -472,7 +488,11 @@ class _MapScreenState extends State<MapScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.star_outline_rounded, color: Color(0xFFF39C12), size: 22),
+                        const Icon(
+                          Icons.star_outline_rounded,
+                          color: Color(0xFFF39C12),
+                          size: 22,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           'Cultural Treasure Found!',
@@ -491,9 +511,16 @@ class _MapScreenState extends State<MapScreen> {
                         decoration: BoxDecoration(
                           color: const Color(0xFFF3ECE6),
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFF5A4D47), width: 1.2),
+                          border: Border.all(
+                            color: const Color(0xFF5A4D47),
+                            width: 1.2,
+                          ),
                         ),
-                        child: const Icon(Icons.close_rounded, size: 18, color: Color(0xFF5A4D47)),
+                        child: const Icon(
+                          Icons.close_rounded,
+                          size: 18,
+                          color: Color(0xFF5A4D47),
+                        ),
                       ),
                     ),
                   ],
@@ -515,7 +542,10 @@ class _MapScreenState extends State<MapScreen> {
                       colors: [Color(0xFFE4F8F3), Color(0xFFFFEFF4)],
                     ),
                     borderRadius: BorderRadius.circular(22),
-                    border: Border.all(color: const Color(0xFF5A4D47), width: 1.6),
+                    border: Border.all(
+                      color: const Color(0xFF5A4D47),
+                      width: 1.6,
+                    ),
                   ),
                   child: Stack(
                     alignment: Alignment.center,
@@ -526,7 +556,11 @@ class _MapScreenState extends State<MapScreen> {
                         bottom: 12,
                         child: Opacity(
                           opacity: 0.8,
-                          child: const Icon(Icons.landscape_rounded, size: 48, color: Color(0xFFB8D8D8)),
+                          child: const Icon(
+                            Icons.landscape_rounded,
+                            size: 48,
+                            color: Color(0xFFB8D8D8),
+                          ),
                         ),
                       ),
                       Positioned(
@@ -534,7 +568,11 @@ class _MapScreenState extends State<MapScreen> {
                         bottom: 12,
                         child: Opacity(
                           opacity: 0.8,
-                          child: const Icon(Icons.temple_buddhist_rounded, size: 44, color: Color(0xFFE74C3C)),
+                          child: const Icon(
+                            Icons.temple_buddhist_rounded,
+                            size: 44,
+                            color: Color(0xFFE74C3C),
+                          ),
                         ),
                       ),
 
@@ -543,13 +581,19 @@ class _MapScreenState extends State<MapScreen> {
                         top: 12,
                         right: 14,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
                               colors: [Color(0xFFF5B041), Color(0xFFEB984E)],
                             ),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF5A4D47), width: 1.2),
+                            border: Border.all(
+                              color: const Color(0xFF5A4D47),
+                              width: 1.2,
+                            ),
                             boxShadow: const [
                               BoxShadow(
                                 color: Color(0xFFB87333),
@@ -576,7 +620,10 @@ class _MapScreenState extends State<MapScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFF5A4D47), width: 2),
+                          border: Border.all(
+                            color: const Color(0xFF5A4D47),
+                            width: 2,
+                          ),
                           boxShadow: const [
                             BoxShadow(
                               color: Color(0x18000000),
@@ -590,15 +637,17 @@ class _MapScreenState extends State<MapScreen> {
                               ? Image.network(
                                   creature.imageUrl,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) => _buildEmptyMascotSlot(),
+                                  errorBuilder: (_, _, _) =>
+                                      _buildEmptyMascotSlot(),
                                 )
                               : (creature.imageAsset.trim().isNotEmpty
-                                  ? Image.asset(
-                                      creature.imageAsset,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, _, _) => _buildEmptyMascotSlot(),
-                                    )
-                                  : _buildEmptyMascotSlot()),
+                                    ? Image.asset(
+                                        creature.imageAsset,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, _, _) =>
+                                            _buildEmptyMascotSlot(),
+                                      )
+                                    : _buildEmptyMascotSlot()),
                         ),
                       ),
                     ],
@@ -619,11 +668,17 @@ class _MapScreenState extends State<MapScreen> {
               ),
               const SizedBox(height: 4),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 3,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFD4F6E6),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF40AA9F), width: 1.2),
+                  border: Border.all(
+                    color: const Color(0xFF40AA9F),
+                    width: 1.2,
+                  ),
                 ),
                 child: Text(
                   creature.country,
@@ -641,15 +696,25 @@ class _MapScreenState extends State<MapScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 18),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF0D1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2C46E), width: 1.2),
+                    border: Border.all(
+                      color: const Color(0xFFE2C46E),
+                      width: 1.2,
+                    ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.location_on_rounded, color: Color(0xFFC07D1C), size: 16),
+                      const Icon(
+                        Icons.location_on_rounded,
+                        color: Color(0xFFC07D1C),
+                        size: 16,
+                      ),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
@@ -702,7 +767,10 @@ class _MapScreenState extends State<MapScreen> {
                               colors: [Color(0xFFFF9E8A), Color(0xFFFF6E55)],
                             ),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFAC5E52), width: 1.8),
+                            border: Border.all(
+                              color: const Color(0xFFAC5E52),
+                              width: 1.8,
+                            ),
                             boxShadow: const [
                               BoxShadow(
                                 color: Color(0xFFAC5E52),
@@ -738,7 +806,10 @@ class _MapScreenState extends State<MapScreen> {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: AppColors.primary, width: 1.8),
+                            border: Border.all(
+                              color: AppColors.primary,
+                              width: 1.8,
+                            ),
                             boxShadow: const [
                               BoxShadow(
                                 color: Color(0xFFD6CBC3),
@@ -751,7 +822,11 @@ class _MapScreenState extends State<MapScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.remove_red_eye_rounded, size: 16, color: AppColors.primary),
+                                const Icon(
+                                  Icons.remove_red_eye_rounded,
+                                  size: 16,
+                                  color: AppColors.primary,
+                                ),
                                 const SizedBox(width: 6),
                                 Text(
                                   'View Hunt',
@@ -784,7 +859,11 @@ class _MapScreenState extends State<MapScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.add_photo_alternate_outlined, size: 28, color: Color(0xFF8C7E75)),
+            const Icon(
+              Icons.add_photo_alternate_outlined,
+              size: 28,
+              color: Color(0xFF8C7E75),
+            ),
             const SizedBox(height: 2),
             Text(
               'Insert Image',
@@ -844,7 +923,8 @@ class _MapScreenState extends State<MapScreen> {
             Positioned(
               left: 14,
               right: 14,
-              bottom: 84, // Clean floating position right above bottom navigation
+              bottom:
+                  84, // Clean floating position right above bottom navigation
               child: _buildSelectedDiscoveryCard(_selectedDiscovery!),
             ),
         ],
@@ -853,36 +933,49 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // 1. Map Body: High-Fidelity Interactive Map (Default) or Google Map
+  // 1. Map Body: OpenStreetMap or offline illustrated map
   // ---------------------------------------------------------------------------
   Widget _buildMapBody() {
-    if (!_useGoogleMaps || _hasMapInitError) {
+    if (_usePrototypeMap) {
       return _buildInteractivePrototypeMap();
     }
 
-    return GoogleMap(
-      initialCameraPosition: CameraPosition(
-        target: _liveLocation,
-        zoom: 15.0,
+    return FlutterMap(
+      mapController: _mapController,
+      options: MapOptions(
+        initialCenter: _liveLocation,
+        initialZoom: _currentZoom,
+        onMapReady: () {
+          _mapReady = true;
+          if (_hasLiveLocation) {
+            _mapController.move(_liveLocation, _currentZoom);
+          }
+        },
+        onTap: (_, _) {
+          if (_selectedDiscovery != null) {
+            setState(() => _selectedDiscovery = null);
+          }
+        },
       ),
-      mapType: MapType.normal,
-      markers: _buildGoogleMapMarkers(),
-      myLocationEnabled: true,
-      myLocationButtonEnabled: false,
-      zoomControlsEnabled: false,
-      compassEnabled: true,
-      onMapCreated: (controller) {
-        try {
-          _mapController = controller;
-        } catch (_) {
-          if (mounted) setState(() => _hasMapInitError = true);
-        }
-      },
-      onTap: (_) {
-        if (_selectedDiscovery != null) {
-          setState(() => _selectedDiscovery = null);
-        }
-      },
+      children: [
+        TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.example.nexora',
+        ),
+        MarkerLayer(markers: _buildMapMarkers()),
+        RichAttributionWidget(
+          alignment: AttributionAlignment.bottomRight,
+          attributions: [
+            TextSourceAttribution(
+              '© OpenStreetMap contributors',
+              onTap: () => launchUrl(
+                Uri.https('www.openstreetmap.org', '/copyright'),
+                mode: LaunchMode.externalApplication,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -947,8 +1040,10 @@ class _MapScreenState extends State<MapScreen> {
                 ),
                 Text(
                   _isLocatingLiveGps
-                      ? 'Locating GPS in Johor...'
+                      ? 'Locating your position...'
                       : _locationStatusText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.nunito(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -979,7 +1074,11 @@ class _MapScreenState extends State<MapScreen> {
                 border: Border.all(color: const Color(0xFF5A4D47), width: 1.4),
               ),
               child: const Center(
-                child: Icon(Icons.notifications_outlined, size: 18, color: Color(0xFF5A4D47)),
+                child: Icon(
+                  Icons.notifications_outlined,
+                  size: 18,
+                  color: Color(0xFF5A4D47),
+                ),
               ),
             ),
           ),
@@ -999,7 +1098,11 @@ class _MapScreenState extends State<MapScreen> {
                 border: Border.all(color: const Color(0xFF5A4D47), width: 1.4),
               ),
               child: const Center(
-                child: Icon(Icons.person_rounded, size: 18, color: Color(0xFF2E856E)),
+                child: Icon(
+                  Icons.person_rounded,
+                  size: 18,
+                  color: Color(0xFF2E856E),
+                ),
               ),
             ),
           ),
@@ -1073,7 +1176,11 @@ class _MapScreenState extends State<MapScreen> {
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: const Color(0xFF5A4D47), width: 1.2),
               ),
-              child: const Icon(Icons.tune_rounded, size: 16, color: Color(0xFF5A4D47)),
+              child: const Icon(
+                Icons.tune_rounded,
+                size: 16,
+                color: Color(0xFF5A4D47),
+              ),
             ),
           ),
         ],
@@ -1120,7 +1227,8 @@ class _MapScreenState extends State<MapScreen> {
             textColor: const Color(0xFF1E5F57),
             onTap: () {
               setState(() {
-                _selectedCategory = _selectedCategory == CulturalCategory.heritage
+                _selectedCategory =
+                    _selectedCategory == CulturalCategory.heritage
                     ? null
                     : CulturalCategory.heritage;
               });
@@ -1185,7 +1293,9 @@ class _MapScreenState extends State<MapScreen> {
           color: isSelected ? bgColor : Colors.white.withValues(alpha: 0.95),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isSelected ? const Color(0xFF5A4D47) : const Color(0xFFC9C1B8),
+            color: isSelected
+                ? const Color(0xFF5A4D47)
+                : const Color(0xFFC9C1B8),
             width: isSelected ? 1.8 : 1.2,
           ),
           boxShadow: isSelected
@@ -1216,7 +1326,9 @@ class _MapScreenState extends State<MapScreen> {
               style: GoogleFonts.fredoka(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                color: isSelected ? const Color(0xFF2E2420) : AppColors.secondaryText,
+                color: isSelected
+                    ? const Color(0xFF2E2420)
+                    : AppColors.secondaryText,
               ),
             ),
           ],
@@ -1321,7 +1433,11 @@ class _MapScreenState extends State<MapScreen> {
               ],
             ),
             child: const Center(
-              child: Icon(Icons.pets_rounded, color: Color(0xFFD98BA8), size: 20),
+              child: Icon(
+                Icons.pets_rounded,
+                color: Color(0xFFD98BA8),
+                size: 20,
+              ),
             ),
           ),
         ),
@@ -1347,7 +1463,10 @@ class _MapScreenState extends State<MapScreen> {
             child: _isLocatingLiveGps
                 ? const Padding(
                     padding: EdgeInsets.all(10),
-                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primary,
+                    ),
                   )
                 : const Icon(
                     Icons.my_location_rounded,
@@ -1386,7 +1505,11 @@ class _MapScreenState extends State<MapScreen> {
               IconButton(
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 40, minHeight: 38),
-                icon: const Icon(Icons.remove, size: 20, color: Color(0xFF5A4D47)),
+                icon: const Icon(
+                  Icons.remove,
+                  size: 20,
+                  color: Color(0xFF5A4D47),
+                ),
                 onPressed: _zoomOut,
               ),
             ],
@@ -1463,7 +1586,8 @@ class _MapScreenState extends State<MapScreen> {
                       ? Image.network(
                           discovery.imageUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => _buildEmptyPhotoSlot(discovery),
+                          errorBuilder: (_, _, _) =>
+                              _buildEmptyPhotoSlot(discovery),
                         )
                       : _buildEmptyPhotoSlot(discovery),
                 ),
@@ -1503,9 +1627,13 @@ class _MapScreenState extends State<MapScreen> {
                             });
                           },
                           child: Icon(
-                            isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+                            isBookmarked
+                                ? Icons.bookmark_rounded
+                                : Icons.bookmark_outline_rounded,
                             size: 22,
-                            color: isBookmarked ? AppColors.coral : const Color(0xFF5A4D47),
+                            color: isBookmarked
+                                ? AppColors.coral
+                                : const Color(0xFF5A4D47),
                           ),
                         ),
                       ],
@@ -1514,7 +1642,10 @@ class _MapScreenState extends State<MapScreen> {
 
                     // Category Pill with vector icon (Image 1)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: discovery.category.color,
                         borderRadius: BorderRadius.circular(8),
@@ -1526,7 +1657,11 @@ class _MapScreenState extends State<MapScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(discovery.category.icon, size: 11, color: discovery.category.textColor),
+                          Icon(
+                            discovery.category.icon,
+                            size: 11,
+                            color: discovery.category.textColor,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             discovery.category.label,
@@ -1544,7 +1679,11 @@ class _MapScreenState extends State<MapScreen> {
                     // Contributor Line: "Contributed by Marco R." (Image 1)
                     Row(
                       children: [
-                        const Icon(Icons.person_rounded, size: 12, color: AppColors.secondaryText),
+                        const Icon(
+                          Icons.person_rounded,
+                          size: 12,
+                          color: AppColors.secondaryText,
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
@@ -1594,7 +1733,10 @@ class _MapScreenState extends State<MapScreen> {
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF336E67), width: 1.6),
+                      border: Border.all(
+                        color: const Color(0xFF336E67),
+                        width: 1.6,
+                      ),
                       boxShadow: const [
                         BoxShadow(
                           color: Color(0xFF336E67),
@@ -1629,7 +1771,10 @@ class _MapScreenState extends State<MapScreen> {
                         colors: [Color(0xFFFF9E8A), Color(0xFFFF6E55)],
                       ),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFAC5E52), width: 1.6),
+                      border: Border.all(
+                        color: const Color(0xFFAC5E52),
+                        width: 1.6,
+                      ),
                       boxShadow: const [
                         BoxShadow(
                           color: Color(0xFFAC5E52),
@@ -1642,7 +1787,11 @@ class _MapScreenState extends State<MapScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.near_me_rounded, size: 16, color: Colors.white),
+                          const Icon(
+                            Icons.near_me_rounded,
+                            size: 16,
+                            color: Colors.white,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             'Directions',
@@ -1709,7 +1858,11 @@ class _MapScreenState extends State<MapScreen> {
           color: Color(0xFFFFF9F0),
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           boxShadow: [
-            BoxShadow(color: Color(0x40000000), offset: Offset(0, -4), blurRadius: 20),
+            BoxShadow(
+              color: Color(0x40000000),
+              offset: Offset(0, -4),
+              blurRadius: 20,
+            ),
           ],
         ),
         child: Column(
@@ -1739,13 +1892,17 @@ class _MapScreenState extends State<MapScreen> {
                         width: double.infinity,
                         decoration: BoxDecoration(
                           color: const Color(0xFFF7F2EC),
-                          border: Border.all(color: const Color(0xFF5A4D47), width: 1.8),
+                          border: Border.all(
+                            color: const Color(0xFF5A4D47),
+                            width: 1.8,
+                          ),
                         ),
                         child: discovery.hasCustomImage
                             ? Image.network(
                                 discovery.imageUrl,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) => _buildEmptyPhotoSlot(discovery),
+                                errorBuilder: (_, _, _) =>
+                                    _buildEmptyPhotoSlot(discovery),
                               )
                             : _buildEmptyPhotoSlot(discovery),
                       ),
@@ -1756,16 +1913,26 @@ class _MapScreenState extends State<MapScreen> {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: discovery.category.color,
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: discovery.category.borderColor, width: 1.2),
+                            border: Border.all(
+                              color: discovery.category.borderColor,
+                              width: 1.2,
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(discovery.category.icon, size: 14, color: discovery.category.textColor),
+                              Icon(
+                                discovery.category.icon,
+                                size: 14,
+                                color: discovery.category.textColor,
+                              ),
                               const SizedBox(width: 5),
                               Text(
                                 discovery.category.label,
@@ -1780,16 +1947,26 @@ class _MapScreenState extends State<MapScreen> {
                         ),
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFD4F6E6),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFF2E856E), width: 1.2),
+                            border: Border.all(
+                              color: const Color(0xFF2E856E),
+                              width: 1.2,
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.check_circle_rounded, size: 13, color: Color(0xFF2E856E)),
+                              const Icon(
+                                Icons.check_circle_rounded,
+                                size: 13,
+                                color: Color(0xFF2E856E),
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 'Community Approved',
@@ -1820,7 +1997,11 @@ class _MapScreenState extends State<MapScreen> {
                     // Contributor & Location
                     Row(
                       children: [
-                        const Icon(Icons.location_on_rounded, size: 16, color: AppColors.primary),
+                        const Icon(
+                          Icons.location_on_rounded,
+                          size: 16,
+                          color: AppColors.primary,
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
@@ -1837,7 +2018,11 @@ class _MapScreenState extends State<MapScreen> {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.person_rounded, size: 16, color: AppColors.primary),
+                        const Icon(
+                          Icons.person_rounded,
+                          size: 16,
+                          color: AppColors.primary,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'Contributed by ${discovery.contributor}',
@@ -1873,7 +2058,8 @@ class _MapScreenState extends State<MapScreen> {
 
                     const SizedBox(height: 16),
 
-                    if (discovery.culturalSignificance != null && discovery.culturalSignificance!.isNotEmpty) ...[
+                    if (discovery.culturalSignificance != null &&
+                        discovery.culturalSignificance!.isNotEmpty) ...[
                       Text(
                         'Cultural Significance',
                         style: GoogleFonts.fredoka(
@@ -1888,7 +2074,10 @@ class _MapScreenState extends State<MapScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFF5A4D47), width: 1.4),
+                          border: Border.all(
+                            color: const Color(0xFF5A4D47),
+                            width: 1.4,
+                          ),
                         ),
                         child: Text(
                           discovery.culturalSignificance!,
@@ -1904,15 +2093,25 @@ class _MapScreenState extends State<MapScreen> {
                     ],
 
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFE8F6F4),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.primary, width: 1.4),
+                        border: Border.all(
+                          color: AppColors.primary,
+                          width: 1.4,
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.explore_rounded, color: AppColors.primary, size: 18),
+                          const Icon(
+                            Icons.explore_rounded,
+                            color: AppColors.primary,
+                            size: 18,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'GPS: ${discovery.latitude?.toStringAsFixed(4)}, ${discovery.longitude?.toStringAsFixed(4)}',
@@ -1963,25 +2162,31 @@ class _MapScreenState extends State<MapScreen> {
             const SizedBox(height: 14),
             SwitchListTile.adaptive(
               title: Text(
-                'Enable Google Maps Online Tiles',
-                style: GoogleFonts.fredoka(fontSize: 14, fontWeight: FontWeight.w600),
+                'Use offline illustrated map',
+                style: GoogleFonts.fredoka(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               subtitle: Text(
-                'Requires Google Maps API key; toggle off for instant offline prototype map',
+                'Switch off to use the online OpenStreetMap with live positioning',
                 style: GoogleFonts.nunito(fontSize: 12),
               ),
-              value: _useGoogleMaps,
+              value: _usePrototypeMap,
               activeTrackColor: AppColors.primary,
               onChanged: (val) {
-                setState(() => _useGoogleMaps = val);
+                setState(() => _usePrototypeMap = val);
                 Navigator.pop(ctx);
               },
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.my_location_rounded, color: AppColors.primary),
+              leading: const Icon(
+                Icons.my_location_rounded,
+                color: AppColors.primary,
+              ),
               title: Text(
-                'Recenter on Live GPS (Johor, Malaysia)',
+                'Recenter on my live location',
                 style: GoogleFonts.fredoka(fontSize: 14),
               ),
               onTap: () {
@@ -2020,7 +2225,11 @@ class _MapScreenState extends State<MapScreen> {
               final discovery = entry.key;
               final pinCenter = entry.value;
 
-              final rect = Rect.fromCenter(center: pinCenter, width: 44, height: 44);
+              final rect = Rect.fromCenter(
+                center: pinCenter,
+                width: 44,
+                height: 44,
+              );
               if (rect.contains(tapPos)) {
                 setState(() {
                   _selectedDiscovery = discovery;
@@ -2055,17 +2264,45 @@ class _MapScreenState extends State<MapScreen> {
     final cy = size.height * 0.46 + _mapPanOffset.dy;
 
     final offsets = [
-      Offset(cx - 96 * _prototypeMapScale, cy - 90 * _prototypeMapScale), // 1. Food
-      Offset(cx - 120 * _prototypeMapScale, cy - 38 * _prototypeMapScale), // 2. Heritage (Tan Hiok Nee)
-      Offset(cx - 125 * _prototypeMapScale, cy + 85 * _prototypeMapScale), // 3. Murals (Pasar Karat)
-      Offset(cx - 12 * _prototypeMapScale, cy - 80 * _prototypeMapScale),  // 4. Crafts (Kompleks Kraf)
-      Offset(cx + 78 * _prototypeMapScale, cy - 98 * _prototypeMapScale),  // 5. Heritage
-      Offset(cx + 86 * _prototypeMapScale, cy - 18 * _prototypeMapScale),  // 6. Crafts
-      Offset(cx + 52 * _prototypeMapScale, cy + 70 * _prototypeMapScale),  // 7. Food
-      Offset(cx + 20 * _prototypeMapScale, cy + 12 * _prototypeMapScale),  // 8. Colosseum
+      Offset(
+        cx - 96 * _prototypeMapScale,
+        cy - 90 * _prototypeMapScale,
+      ), // 1. Food
+      Offset(
+        cx - 120 * _prototypeMapScale,
+        cy - 38 * _prototypeMapScale,
+      ), // 2. Heritage (Tan Hiok Nee)
+      Offset(
+        cx - 125 * _prototypeMapScale,
+        cy + 85 * _prototypeMapScale,
+      ), // 3. Murals (Pasar Karat)
+      Offset(
+        cx - 12 * _prototypeMapScale,
+        cy - 80 * _prototypeMapScale,
+      ), // 4. Crafts (Kompleks Kraf)
+      Offset(
+        cx + 78 * _prototypeMapScale,
+        cy - 98 * _prototypeMapScale,
+      ), // 5. Heritage
+      Offset(
+        cx + 86 * _prototypeMapScale,
+        cy - 18 * _prototypeMapScale,
+      ), // 6. Crafts
+      Offset(
+        cx + 52 * _prototypeMapScale,
+        cy + 70 * _prototypeMapScale,
+      ), // 7. Food
+      Offset(
+        cx + 20 * _prototypeMapScale,
+        cy + 12 * _prototypeMapScale,
+      ), // 8. Colosseum
     ];
 
-    for (int i = 0; i < _filteredDiscoveries.length && i < offsets.length; i++) {
+    for (
+      int i = 0;
+      i < _filteredDiscoveries.length && i < offsets.length;
+      i++
+    ) {
       map[_filteredDiscoveries[i]] = offsets[i];
     }
     return map;
@@ -2109,11 +2346,51 @@ class _HighFidelityPrototypeMapPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     final parkBlocks = [
-      RRect.fromRectAndRadius(Rect.fromLTWH(cx - 160 * scale, cy - 180 * scale, 120 * scale, 70 * scale), const Radius.circular(8)),
-      RRect.fromRectAndRadius(Rect.fromLTWH(cx + 40 * scale, cy - 190 * scale, 130 * scale, 65 * scale), const Radius.circular(8)),
-      RRect.fromRectAndRadius(Rect.fromLTWH(cx - 180 * scale, cy + 30 * scale, 110 * scale, 85 * scale), const Radius.circular(8)),
-      RRect.fromRectAndRadius(Rect.fromLTWH(cx + 60 * scale, cy + 40 * scale, 120 * scale, 75 * scale), const Radius.circular(8)),
-      RRect.fromRectAndRadius(Rect.fromLTWH(cx - 40 * scale, cy - 140 * scale, 70 * scale, 45 * scale), const Radius.circular(6)),
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          cx - 160 * scale,
+          cy - 180 * scale,
+          120 * scale,
+          70 * scale,
+        ),
+        const Radius.circular(8),
+      ),
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          cx + 40 * scale,
+          cy - 190 * scale,
+          130 * scale,
+          65 * scale,
+        ),
+        const Radius.circular(8),
+      ),
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          cx - 180 * scale,
+          cy + 30 * scale,
+          110 * scale,
+          85 * scale,
+        ),
+        const Radius.circular(8),
+      ),
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          cx + 60 * scale,
+          cy + 40 * scale,
+          120 * scale,
+          75 * scale,
+        ),
+        const Radius.circular(8),
+      ),
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          cx - 40 * scale,
+          cy - 140 * scale,
+          70 * scale,
+          45 * scale,
+        ),
+        const Radius.circular(6),
+      ),
     ];
     for (final b in parkBlocks) {
       canvas.drawRRect(b, parkPaint);
@@ -2133,14 +2410,30 @@ class _HighFidelityPrototypeMapPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     final roads = [
-      Path()..moveTo(cx - 220 * scale, cy - 90 * scale)..lineTo(cx + 220 * scale, cy - 100 * scale),
-      Path()..moveTo(cx - 220 * scale, cy + 60 * scale)..lineTo(cx + 220 * scale, cy + 50 * scale),
-      Path()..moveTo(cx - 220 * scale, cy - 10 * scale)..lineTo(cx + 220 * scale, cy - 10 * scale),
-      Path()..moveTo(cx - 100 * scale, cy - 220 * scale)..lineTo(cx - 90 * scale, cy + 220 * scale),
-      Path()..moveTo(cx + 70 * scale, cy - 220 * scale)..lineTo(cx + 80 * scale, cy + 220 * scale),
-      Path()..moveTo(cx - 10 * scale, cy - 220 * scale)..lineTo(cx - 10 * scale, cy + 220 * scale),
-      Path()..moveTo(cx - 180 * scale, cy - 200 * scale)..lineTo(cx + 180 * scale, cy + 180 * scale),
-      Path()..moveTo(cx + 180 * scale, cy - 180 * scale)..lineTo(cx - 160 * scale, cy + 180 * scale),
+      Path()
+        ..moveTo(cx - 220 * scale, cy - 90 * scale)
+        ..lineTo(cx + 220 * scale, cy - 100 * scale),
+      Path()
+        ..moveTo(cx - 220 * scale, cy + 60 * scale)
+        ..lineTo(cx + 220 * scale, cy + 50 * scale),
+      Path()
+        ..moveTo(cx - 220 * scale, cy - 10 * scale)
+        ..lineTo(cx + 220 * scale, cy - 10 * scale),
+      Path()
+        ..moveTo(cx - 100 * scale, cy - 220 * scale)
+        ..lineTo(cx - 90 * scale, cy + 220 * scale),
+      Path()
+        ..moveTo(cx + 70 * scale, cy - 220 * scale)
+        ..lineTo(cx + 80 * scale, cy + 220 * scale),
+      Path()
+        ..moveTo(cx - 10 * scale, cy - 220 * scale)
+        ..lineTo(cx - 10 * scale, cy + 220 * scale),
+      Path()
+        ..moveTo(cx - 180 * scale, cy - 200 * scale)
+        ..lineTo(cx + 180 * scale, cy + 180 * scale),
+      Path()
+        ..moveTo(cx + 180 * scale, cy - 180 * scale)
+        ..lineTo(cx - 160 * scale, cy + 180 * scale),
     ];
 
     for (final r in roads) {
@@ -2188,8 +2481,16 @@ class _HighFidelityPrototypeMapPainter extends CustomPainter {
       ..color = Colors.white
       ..strokeWidth = 8 * scale
       ..style = PaintingStyle.stroke;
-    canvas.drawLine(Offset(cx - 110 * scale, cy - 45 * scale), Offset(cx - 95 * scale, cy - 75 * scale), bridgePaint);
-    canvas.drawLine(Offset(cx + 40 * scale, cy + 50 * scale), Offset(cx + 60 * scale, cy + 80 * scale), bridgePaint);
+    canvas.drawLine(
+      Offset(cx - 110 * scale, cy - 45 * scale),
+      Offset(cx - 95 * scale, cy - 75 * scale),
+      bridgePaint,
+    );
+    canvas.drawLine(
+      Offset(cx + 40 * scale, cy + 50 * scale),
+      Offset(cx + 60 * scale, cy + 80 * scale),
+      bridgePaint,
+    );
 
     // 5. Illustrated St. Peter's / Sultan Abu Bakar Architectural Dome in Background (Image 1)
     final domeCenter = Offset(cx + 115 * scale, cy - 65 * scale);
@@ -2199,7 +2500,11 @@ class _HighFidelityPrototypeMapPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     canvas.drawArc(
-      Rect.fromCenter(center: domeCenter, width: 34 * scale, height: 38 * scale),
+      Rect.fromCenter(
+        center: domeCenter,
+        width: 34 * scale,
+        height: 38 * scale,
+      ),
       3.14,
       3.14,
       false,
@@ -2210,7 +2515,11 @@ class _HighFidelityPrototypeMapPainter extends CustomPainter {
       Offset(domeCenter.dx + 22 * scale, domeCenter.dy + 8 * scale),
       domePaint,
     );
-    canvas.drawCircle(Offset(domeCenter.dx, domeCenter.dy - 22 * scale), 2.5 * scale, domePaint);
+    canvas.drawCircle(
+      Offset(domeCenter.dx, domeCenter.dy - 22 * scale),
+      2.5 * scale,
+      domePaint,
+    );
 
     // 6. User's Live Location (Vibrant Blue Dot with Dual Concentric Pulses in Johor - Image 1)
     final userCenter = Offset(cx - 10 * scale, cy + 2 * scale);
@@ -2244,11 +2553,11 @@ class _HighFidelityPrototypeMapPainter extends CustomPainter {
       Offset(cx - 96 * scale, cy - 90 * scale), // 1. Food
       Offset(cx - 120 * scale, cy - 38 * scale), // 2. Heritage (Tan Hiok Nee)
       Offset(cx - 125 * scale, cy + 85 * scale), // 3. Murals (Pasar Karat)
-      Offset(cx - 12 * scale, cy - 80 * scale),  // 4. Crafts (Kompleks Kraf)
-      Offset(cx + 78 * scale, cy - 98 * scale),  // 5. Heritage
-      Offset(cx + 86 * scale, cy - 18 * scale),  // 6. Crafts
-      Offset(cx + 52 * scale, cy + 70 * scale),  // 7. Food
-      Offset(cx + 20 * scale, cy + 12 * scale),  // 8. Colosseum
+      Offset(cx - 12 * scale, cy - 80 * scale), // 4. Crafts (Kompleks Kraf)
+      Offset(cx + 78 * scale, cy - 98 * scale), // 5. Heritage
+      Offset(cx + 86 * scale, cy - 18 * scale), // 6. Crafts
+      Offset(cx + 52 * scale, cy + 70 * scale), // 7. Food
+      Offset(cx + 20 * scale, cy + 12 * scale), // 8. Colosseum
     ];
 
     for (int i = 0; i < discoveries.length && i < offsets.length; i++) {
@@ -2259,15 +2568,24 @@ class _HighFidelityPrototypeMapPainter extends CustomPainter {
 
     // 8. Glowing Mascot Pin when Hunt Reached (Image 3)
     if (isNearHunt && nearbyCreature != null) {
-      final huntPos = Offset(userCenter.dx + 42 * scale, userCenter.dy - 38 * scale);
+      final huntPos = Offset(
+        userCenter.dx + 42 * scale,
+        userCenter.dy - 38 * scale,
+      );
 
       final rayPaint = Paint()
         ..color = const Color(0xFFF39C12)
         ..strokeWidth = 2 * scale
         ..style = PaintingStyle.stroke;
       for (double angle = 0; angle < 6.28; angle += 0.8) {
-        final start = Offset(huntPos.dx + 22 * scale * angle.abs(), huntPos.dy + 22 * scale * angle.abs());
-        final end = Offset(huntPos.dx + 28 * scale * angle.abs(), huntPos.dy + 28 * scale * angle.abs());
+        final start = Offset(
+          huntPos.dx + 22 * scale * angle.abs(),
+          huntPos.dy + 22 * scale * angle.abs(),
+        );
+        final end = Offset(
+          huntPos.dx + 28 * scale * angle.abs(),
+          huntPos.dy + 28 * scale * angle.abs(),
+        );
         canvas.drawLine(start, end, rayPaint);
       }
 
@@ -2301,12 +2619,21 @@ class _HighFidelityPrototypeMapPainter extends CustomPainter {
       )..layout();
       iconPainter.paint(
         canvas,
-        Offset(huntPos.dx - iconPainter.width / 2, huntPos.dy - iconPainter.height / 2),
+        Offset(
+          huntPos.dx - iconPainter.width / 2,
+          huntPos.dy - iconPainter.height / 2,
+        ),
       );
     }
   }
 
-  void _drawTeardropPin(Canvas canvas, Offset center, CulturalCategory category, bool isSelected, double mapScale) {
+  void _drawTeardropPin(
+    Canvas canvas,
+    Offset center,
+    CulturalCategory category,
+    bool isSelected,
+    double mapScale,
+  ) {
     Color fillColor;
     IconData icon;
 
@@ -2341,7 +2668,10 @@ class _HighFidelityPrototypeMapPainter extends CustomPainter {
     // Teardrop Pin Path
     final pinPath = Path();
     pinPath.addArc(
-      Rect.fromCircle(center: Offset(center.dx, center.dy - 4 * mapScale), radius: pinRadius),
+      Rect.fromCircle(
+        center: Offset(center.dx, center.dy - 4 * mapScale),
+        radius: pinRadius,
+      ),
       0,
       3.14159 * 2,
     );
@@ -2385,7 +2715,10 @@ class _HighFidelityPrototypeMapPainter extends CustomPainter {
     )..layout();
     textPainter.paint(
       canvas,
-      Offset(iconCircleCenter.dx - textPainter.width / 2, iconCircleCenter.dy - textPainter.height / 2),
+      Offset(
+        iconCircleCenter.dx - textPainter.width / 2,
+        iconCircleCenter.dy - textPainter.height / 2,
+      ),
     );
   }
 
