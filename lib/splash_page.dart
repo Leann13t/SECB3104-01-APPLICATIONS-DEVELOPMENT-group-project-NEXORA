@@ -1,259 +1,223 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import 'core/theme/app_colors.dart';
 import 'login_page.dart';
 
 class SplashPage extends StatelessWidget {
   final VoidCallback? onGetStarted;
 
-  const SplashPage({
-    super.key,
-    this.onGetStarted,
-  });
+  const SplashPage({super.key, this.onGetStarted});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-              child: Container(
-                width: 390,
-                height: 844,
-                clipBehavior: Clip.antiAlias,
-                decoration: ShapeDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment(0.50, 0.00),
-                    end: Alignment(0.50, 1.00),
-                    colors: [
-                      Color(0xFFCFF6EE),
-                      Colors.white,
-                      Color(0xFFFDFFFE),
-                    ],
-                  ),
-                  shape: RoundedRectangleBorder(
-                    side: const BorderSide(
-                      width: 2,
-                      color: Color(0xFF616779),
-                    ),
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                  shadows: const [
-                    BoxShadow(
-                      color: Color(0x1F000000),
-                      blurRadius: 20,
-                      offset: Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Stack(
-                  children: [
-                    // Top illustration image / logo
-                    Positioned(
-                      left: 0,
-                      top: 56,
-                      child: SizedBox(
-                        width: 388,
-                        height: 332,
-                        child: Image.asset(
-                          'assets/images/loraguide_logo.png',
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Center(
-                              child: Icon(
-                                Icons.image_not_supported_outlined,
-                                size: 64,
-                                color: Color(0xFF90BFCE),
-                              ),
-                            );
-                          },
-                        ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFCFF6EE), Colors.white, Color(0xFFFFF9F0)],
+          ),
+        ),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 28,
+                        vertical: 20,
                       ),
-                    ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Spacer(flex: 1),
 
-                    // App Title
-                    Positioned(
-                      left: 28,
-                      top: 388,
-                      child: SizedBox(
-                        width: 334,
-                        child: Text(
-                          'LoraGuide',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.fredoka(
-                            color: const Color(0xFF4A9188),
-                            fontSize: 46,
-                            fontWeight: FontWeight.w700,
-                            height: 1.20,
-                            shadows: const [
-                              Shadow(
-                                offset: Offset(0, 3),
-                                blurRadius: 0,
-                                color: Color(0xFFE2D5A8),
+                          // Decorative top sparkler
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                '✦',
+                                style: GoogleFonts.fredoka(
+                                  color: const Color(0xFFF2C66D),
+                                  fontSize: 24,
+                                ),
                               ),
+                              const SizedBox(width: 20),
                             ],
                           ),
-                        ),
-                      ),
-                    ),
 
-                    // Tagline
-                    Positioned(
-                      left: 30,
-                      top: 460,
-                      child: SizedBox(
-                        width: 330,
-                        child: Text(
-                          'Discover local culture.\nCollect unique creatures.',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.fredoka(
-                            color: const Color(0xFF3B302A),
-                            fontSize: 23,
-                            fontWeight: FontWeight.w500,
-                            height: 1.39,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Subtitle / Description
-                    Positioned(
-                      left: 48,
-                      top: 552,
-                      child: SizedBox(
-                        width: 294,
-                        child: Text(
-                          'Find hidden food spots, murals, crafts and heritage places shared by your community.',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.nunito(
-                            color: const Color(0xFF51443F),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            height: 1.53,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // "Get Started" Button
-                    Positioned(
-                      left: 46,
-                      top: 710,
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () {
-                          if (onGetStarted != null) {
-                            onGetStarted!();
-                          } else {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginPage(),
-                              ),
-                            );
-                          }
-                        },
-                        child: MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: Container(
-                            width: 298,
-                            height: 60,
-                            decoration: ShapeDecoration(
-                              gradient: const LinearGradient(
-                                begin: Alignment(0.00, 0.50),
-                                end: Alignment(1.00, 0.50),
-                                colors: [Color(0xFFFFAB99), Color(0xFFFF816F)],
-                              ),
-                              shape: RoundedRectangleBorder(
-                                side: const BorderSide(
-                                  width: 2.20,
-                                  color: Color(0xFFAC5E52),
+                          // App Mascot / Logo
+                          Center(
+                            child: SizedBox(
+                              width: 260,
+                              height: 260,
+                              child: Image.asset(
+                                'assets/images/loraguide_logo.png',
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, _, _) => const Icon(
+                                  Icons.explore_rounded,
+                                  size: 100,
+                                  color: AppColors.primary,
                                 ),
-                                borderRadius: BorderRadius.circular(18),
                               ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // App Title
+                          Text(
+                            'LoraGuide',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.fredoka(
+                              color: AppColors.primary,
+                              fontSize: 44,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
                               shadows: const [
-                                BoxShadow(
-                                  color: Color(0xE5B15C4C),
+                                Shadow(
+                                  offset: Offset(0, 3),
                                   blurRadius: 0,
-                                  offset: Offset(0, 6),
-                                  spreadRadius: 0,
-                                ),
-                                BoxShadow(
-                                  color: Color(0x3D9B6B5D),
-                                  blurRadius: 9,
-                                  offset: Offset(0, 10),
-                                  spreadRadius: 0,
+                                  color: Color(0xFFE2D5A8),
                                 ),
                               ],
                             ),
-                            child: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                Positioned(
-                                  left: 16,
-                                  top: 14,
-                                  child: SizedBox(
-                                    width: 266,
-                                    child: Text(
-                                      'Get Started',
-                                      textAlign: TextAlign.center,
-                                      style: GoogleFonts.fredoka(
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // Tagline
+                          Text(
+                            'Discover local culture.\nCollect unique creatures.',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.fredoka(
+                              color: AppColors.darkBrown,
+                              fontSize: 21,
+                              fontWeight: FontWeight.w600,
+                              height: 1.35,
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // Subtitle description
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              'Find hidden food spots, murals, crafts and heritage places shared by your local community.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.nunito(
+                                color: AppColors.secondaryText,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                height: 1.45,
+                              ),
+                            ),
+                          ),
+
+                          const Spacer(flex: 2),
+
+                          // "Get Started" Button
+                          GestureDetector(
+                            onTap: () {
+                              if (onGetStarted != null) {
+                                onGetStarted!();
+                              } else {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const LoginPage(),
+                                  ),
+                                );
+                              }
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              constraints: const BoxConstraints(maxWidth: 320),
+                              height: 60,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: [
+                                    Color(0xFFFFAB99),
+                                    Color(0xFFFF816F),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: const Color(0xFFAC5E52),
+                                  width: 2.2,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0xFFAC5E52),
+                                    blurRadius: 0,
+                                    offset: Offset(0, 5),
+                                  ),
+                                  BoxShadow(
+                                    color: Color(0x3D9B6B5D),
+                                    blurRadius: 10,
+                                    offset: Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Get Started',
+                                        style: GoogleFonts.fredoka(
+                                          color: Colors.white,
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const Icon(
+                                        Icons.arrow_forward_rounded,
                                         color: Colors.white,
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w700,
-                                        height: 1.33,
+                                        size: 24,
+                                      ),
+                                    ],
+                                  ),
+                                  Positioned(
+                                    right: 20,
+                                    top: 10,
+                                    child: Text(
+                                      '✦',
+                                      style: GoogleFonts.fredoka(
+                                        color: const Color(0xFFFFE9A6),
+                                        fontSize: 20,
                                       ),
                                     ),
                                   ),
-                                ),
-                                Positioned(
-                                  left: 258,
-                                  top: -15,
-                                  child: Text(
-                                    '✦',
-                                    style: GoogleFonts.fredoka(
-                                      color: const Color(0xFFFFE9A6),
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  left: 238,
-                                  top: 6,
-                                  child: Text(
-                                    '✦',
-                                    style: GoogleFonts.fredoka(
-                                      color: const Color(0xFFFFE9A6),
-                                      fontSize: 19,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  left: 13,
-                                  top: 15,
-                                  child: Text(
-                                    '✦',
-                                    style: GoogleFonts.fredoka(
-                                      color: const Color(0xFFFFF6D1),
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
+
+                          const SizedBox(height: 16),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ),
       ),

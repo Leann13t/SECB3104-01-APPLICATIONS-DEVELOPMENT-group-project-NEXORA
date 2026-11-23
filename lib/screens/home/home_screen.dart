@@ -1,34 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Model for cultural discoveries (ready for future backend / Firestore integration)
-class DiscoveryItem {
-  final String id;
-  final String name;
-  final String category;
-  final String location;
-  final bool isApproved;
-  final String? imageUrl;
-  final Widget? illustration;
-
-  const DiscoveryItem({
-    required this.id,
-    required this.name,
-    required this.category,
-    required this.location,
-    this.isApproved = true,
-    this.imageUrl,
-    this.illustration,
-  });
-}
+import '../../core/models/discovery_model.dart';
+import '../../core/models/creature_model.dart';
+import '../../core/theme/app_colors.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(int)? onNavigateTab;
 
-  const HomeScreen({
-    super.key,
-    this.onNavigateTab,
-  });
+  const HomeScreen({super.key, this.onNavigateTab});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -36,62 +16,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedCategory = 'All';
+  CulturalCategory? _selectedCategory;
 
-  // Sample data matching Section 2.E & 2.F
-  final List<DiscoveryItem> _featuredGems = [
-    DiscoveryItem(
-      id: 'gem_1',
-      name: 'Sibu Heritage Lane',
-      category: 'Heritage',
-      location: 'Sibu, Sarawak',
-      isApproved: true,
-      illustration: const _HeritageLaneIllustration(),
-    ),
-    DiscoveryItem(
-      id: 'gem_2',
-      name: 'Traditional Craft Corner',
-      category: 'Crafts',
-      location: 'Sibu, Sarawak',
-      isApproved: true,
-      illustration: const _CraftCornerIllustration(),
-    ),
-    DiscoveryItem(
-      id: 'gem_3',
-      name: 'Tua Pek Kong Temple',
-      category: 'Heritage',
-      location: 'Sibu, Sarawak',
-      isApproved: true,
-      illustration: const _TempleIllustration(),
-    ),
-  ];
-
-  final List<DiscoveryItem> _recentlyAdded = [
-    DiscoveryItem(
-      id: 'recent_1',
-      name: 'Laksa Taman Sentosa',
-      category: 'Food',
-      location: 'Sibu, Sarawak',
-      isApproved: true,
-      illustration: const _LaksaIllustration(),
-    ),
-    DiscoveryItem(
-      id: 'recent_2',
-      name: 'Community Mural Corner',
-      category: 'Murals',
-      location: 'Sibu, Sarawak',
-      isApproved: true,
-      illustration: const _MuralIllustration(),
-    ),
-    DiscoveryItem(
-      id: 'recent_3',
-      name: 'Ah Huat Sibu Kompia',
-      category: 'Food',
-      location: 'Sibu, Sarawak',
-      isApproved: true,
-      illustration: const _KompiaIllustration(),
-    ),
-  ];
+  // Placeholder discoveries (clearly marked sample data)
+  final List<Discovery> _allDiscoveries = Discovery.placeholderDiscoveries;
+  final List<CulturalCreature> _creatures =
+      CulturalCreature.placeholderCreatures;
 
   @override
   void dispose() {
@@ -99,85 +29,82 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  List<Discovery> get _filteredDiscoveries {
+    if (_selectedCategory == null) return _allDiscoveries;
+    return _allDiscoveries
+        .where((d) => d.category == _selectedCategory)
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final int collectedCount = _creatures.where((c) => c.isCollected).length;
+    final int totalCreatures = _creatures.length;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF9F0), // Warm cream background
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFE6FCF7), // Soft mint green at top (matching Splash & Login)
-              Color(0xFFFFF9F0), // Fading into warm cream
-              Color(0xFFFFF9F0),
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.only(
+            bottom: 100,
+          ), // Space for floating bottom nav
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 12),
+
+              // 1. Top Header with Greeting & Avatar / Notification
+              _buildHeader(context),
+
+              const SizedBox(height: 16),
+
+              // 2. Search Bar
+              _buildSearchBar(),
+
+              const SizedBox(height: 20),
+
+              // 3. Category Shortcuts (Food, Heritage, Murals, Crafts)
+              _buildCategoryShortcuts(),
+
+              const SizedBox(height: 22),
+
+              // 4. Explore Cultural Map Banner
+              _buildExploreMapBanner(context),
+
+              const SizedBox(height: 22),
+
+              // 5. Cultural Hunt Progress Teaser
+              _buildCulturalHuntTeaser(context, collectedCount, totalCreatures),
+
+              const SizedBox(height: 24),
+
+              // 6. Featured Hidden Gems (Horizontal Scroll Cards)
+              _buildFeaturedSection(context),
+
+              const SizedBox(height: 26),
+
+              // 7. Recently Added Discoveries (Horizontal / Grid Feed)
+              _buildRecentlyAddedSection(context),
+
+              const SizedBox(height: 16),
             ],
-            stops: [0.0, 0.22, 1.0],
-          ),
-        ),
-        child: SafeArea(
-          bottom: false,
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.only(bottom: 110), // Space for floating bottom nav
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 12),
-
-                // A. Header Section
-                _buildHeader(context),
-
-                const SizedBox(height: 18),
-
-                // B. Search Bar
-                _buildSearchBar(),
-
-                const SizedBox(height: 24),
-
-                // C. Explore by Category
-                _buildCategorySection(),
-
-                const SizedBox(height: 24),
-
-                // D. Explore Map — Main Featured Shortcut
-                _buildExploreMapCard(context),
-
-                const SizedBox(height: 28),
-
-                // Cute mascot cat banner decoration between sections (as shown in Frame 3)
-                _buildScrollTransitionMascot(),
-
-                const SizedBox(height: 12),
-
-                // E. Featured Hidden Gems
-                _buildFeaturedSection(context),
-
-                const SizedBox(height: 28),
-
-                // F. Recently Added Discoveries
-                _buildRecentlyAddedSection(context),
-
-                const SizedBox(height: 20),
-              ],
-            ),
           ),
         ),
       ),
     );
   }
 
-  // -------------------------------------------------------------
-  // A. Header Section
-  // -------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // 1. Header Section
+  // ---------------------------------------------------------------------------
   Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Left: Brand title, mascot badge & subtitle
+          // App Title, Mascot Icon & Greeting
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,31 +115,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       'LoraGuide',
                       style: GoogleFonts.fredoka(
-                        fontSize: 32,
+                        fontSize: 28,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF2E2420),
-                        letterSpacing: -0.5,
+                        color: AppColors.darkBrown,
+                        letterSpacing: -0.3,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // Smiling location-pin mascot badge with sparkles
-                    _buildMascotBadge(),
+                    // Small cartoon location-pin mascot badge
+                    Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: AppColors.lightMint,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.primaryTeal,
+                          width: 1.6,
+                        ),
+                      ),
+                      child: const Center(
+                        child: Text('📍', style: TextStyle(fontSize: 15)),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
-                  'Discover culture, collect memories!',
+                  'Discover culture. Collect memories.',
                   style: GoogleFonts.nunito(
-                    fontSize: 13.5,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF5A4D47),
+                    color: AppColors.secondaryText,
                   ),
                 ),
               ],
             ),
           ),
 
-          // Right: Action buttons (Profile Avatar + Notification Bell)
+          // Actions: Notification bell & profile avatar
           Row(
             children: [
               // Notification Bell
@@ -220,91 +161,77 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Notifications: 2 new hidden gems near you!'),
+                      content: Text(
+                        'Notifications: 2 new Sarawak cultural spots verified!',
+                      ),
                       duration: Duration(seconds: 2),
                     ),
                   );
                 },
                 child: Container(
-                  width: 42,
-                  height: 42,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE2F7F4),
+                    color: AppColors.lightMint,
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF5A4D47), width: 1.8),
+                    border: Border.all(
+                      color: AppColors.primaryTeal,
+                      width: 1.5,
+                    ),
                     boxShadow: const [
                       BoxShadow(
-                        color: Color(0xFFD0EBE7),
-                        offset: Offset(0, 3),
-                        blurRadius: 0,
+                        color: Color(0x15000000),
+                        offset: Offset(0, 2),
+                        blurRadius: 4,
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.all(9),
+                  padding: const EdgeInsets.all(8),
                   child: Image.asset(
                     'assets/icons/notification_bell.png',
                     fit: BoxFit.contain,
                     errorBuilder: (_, _, _) => const Icon(
                       Icons.notifications_outlined,
                       size: 20,
-                      color: Color(0xFF40AA9F),
+                      color: AppColors.primaryTeal,
                     ),
                   ),
                 ),
               ),
               const SizedBox(width: 10),
 
-              // Profile Avatar with online/notification dot
+              // Profile Avatar
               GestureDetector(
                 onTap: () {
                   if (widget.onNavigateTab != null) {
-                    widget.onNavigateTab!(4); // Navigate to Profile tab
+                    widget.onNavigateTab!(4); // Switch to Profile tab
                   }
                 },
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFF5A4D47), width: 1.8),
-                        color: const Color(0xFFFFEBE3),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0xFFEAD5CD),
-                            offset: Offset(0, 3),
-                            blurRadius: 0,
-                          ),
-                        ],
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.darkBrown, width: 1.8),
+                    color: AppColors.lavender,
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x18000000),
+                        offset: Offset(0, 2),
+                        blurRadius: 4,
                       ),
-                      child: ClipOval(
-                        child: Image.asset(
-                          'assets/icons/girl_avatar.png',
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => const Icon(
-                            Icons.person,
-                            color: Color(0xFF5A4D47),
-                          ),
-                        ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/icons/girl_avatar.png',
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const Icon(
+                        Icons.person_rounded,
+                        color: AppColors.darkBrown,
                       ),
                     ),
-                    // Red notification indicator dot
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        width: 11,
-                        height: 11,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFF6E6E),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 1.8),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ],
@@ -314,163 +241,173 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Mascot mini badge in header
-  Widget _buildMascotBadge() {
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFD4CA),
-        shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFFAC5E52), width: 1.5),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0xFFE8B6AC),
-            offset: Offset(0, 2),
-            blurRadius: 0,
-          ),
-        ],
-      ),
-      child: Center(
-        child: Text(
-          '📍',
-          style: const TextStyle(fontSize: 16),
-        ),
-      ),
-    );
-  }
-
-  // -------------------------------------------------------------
-  // B. Search Bar
-  // -------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // 2. Search Bar
+  // ---------------------------------------------------------------------------
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
-        height: 52,
+        height: 50,
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(26),
-          border: Border.all(color: const Color(0xFF40AA9F), width: 2),
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.primaryTeal, width: 1.8),
           boxShadow: const [
             BoxShadow(
-              color: Color(0xFFC7EBE6),
-              offset: Offset(0, 4),
+              color: Color(0xFFE4DAD0),
+              offset: Offset(0, 3),
               blurRadius: 0,
             ),
           ],
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         child: Row(
           children: [
+            const Icon(
+              Icons.search_rounded,
+              color: AppColors.primaryTeal,
+              size: 22,
+            ),
+            const SizedBox(width: 10),
             Expanded(
               child: TextField(
                 controller: _searchController,
                 style: GoogleFonts.nunito(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF3B302A),
+                  color: AppColors.darkBrown,
                 ),
                 decoration: InputDecoration(
                   hintText: 'Search hidden gems, food, murals...',
                   hintStyle: GoogleFonts.nunito(
-                    color: const Color(0xFF9E948D),
+                    color: AppColors.secondaryText,
                     fontSize: 13.5,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                   ),
                   border: InputBorder.none,
-                  isDense: true,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
                   contentPadding: EdgeInsets.zero,
+                  isDense: true,
                 ),
               ),
             ),
-            const SizedBox(width: 8),
-            // Circular search icon button
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: const Color(0xFFD6F6F0),
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF40AA9F), width: 1.6),
+            if (_searchController.text.isNotEmpty)
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _searchController.clear();
+                  });
+                },
+                child: const Icon(
+                  Icons.close_rounded,
+                  size: 18,
+                  color: AppColors.secondaryText,
+                ),
               ),
-              child: const Icon(
-                Icons.search_rounded,
-                size: 20,
-                color: Color(0xFF2C7D75),
-              ),
-            ),
           ],
         ),
       ),
     );
   }
 
-  // -------------------------------------------------------------
-  // C. Explore by Category Section
-  // -------------------------------------------------------------
-  Widget _buildCategorySection() {
-    final categories = [
-      {
-        'name': 'Food',
-        'color': const Color(0xFFD8F2FF),
-        'borderColor': const Color(0xFF5A4D47),
-        'shadowColor': const Color(0xFFBCE3F5),
-        'emoji': '🍜',
-      },
-      {
-        'name': 'Heritage',
-        'color': const Color(0xFFD4F6E6),
-        'borderColor': const Color(0xFF5A4D47),
-        'shadowColor': const Color(0xFFB8E9D0),
-        'emoji': '🏛️',
-      },
-      {
-        'name': 'Murals',
-        'color': const Color(0xFFFFE0ED),
-        'borderColor': const Color(0xFF5A4D47),
-        'shadowColor': const Color(0xFFF7C2D9),
-        'emoji': '🎨',
-      },
-      {
-        'name': 'Crafts',
-        'color': const Color(0xFFFFF0D1),
-        'borderColor': const Color(0xFF5A4D47),
-        'shadowColor': const Color(0xFFEED5A5),
-        'emoji': '🧺',
-      },
-    ];
-
+  // ---------------------------------------------------------------------------
+  // 3. Category Shortcuts (Food, Heritage, Murals, Crafts)
+  // ---------------------------------------------------------------------------
+  Widget _buildCategoryShortcuts() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'What will you discover?',
-            style: GoogleFonts.fredoka(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF2E2420),
-            ),
-          ),
-          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: categories.map((cat) {
-              final isSelected = _selectedCategory == cat['name'];
-              return _buildCategoryButton(
-                name: cat['name'] as String,
-                color: cat['color'] as Color,
-                borderColor: cat['borderColor'] as Color,
-                shadowColor: cat['shadowColor'] as Color,
-                emoji: cat['emoji'] as String,
-                isSelected: isSelected,
-                onTap: () {
-                  setState(() {
-                    _selectedCategory = isSelected ? 'All' : cat['name'] as String;
-                  });
-                },
+            children: [
+              Text(
+                'What will you discover?',
+                style: GoogleFonts.fredoka(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.darkBrown,
+                ),
+              ),
+              if (_selectedCategory != null)
+                GestureDetector(
+                  onTap: () => setState(() => _selectedCategory = null),
+                  child: Text(
+                    'Clear Filter',
+                    style: GoogleFonts.nunito(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primaryTeal,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: CulturalCategory.values.map((category) {
+              final bool isSelected = _selectedCategory == category;
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedCategory = isSelected ? null : category;
+                      });
+                    },
+                    child: Column(
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          height: 64,
+                          decoration: BoxDecoration(
+                            color: category.color,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppColors.primaryTeal
+                                  : AppColors.cardOutline,
+                              width: isSelected ? 2.2 : 1.6,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: isSelected
+                                    ? AppColors.primaryTeal
+                                    : AppColors.cardShadow,
+                                offset: const Offset(0, 3),
+                                blurRadius: 0,
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              category.emoji,
+                              style: const TextStyle(fontSize: 28),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          category.label,
+                          style: GoogleFonts.fredoka(
+                            fontSize: 13,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w600,
+                            color: isSelected
+                                ? AppColors.primaryTeal
+                                : AppColors.darkBrown,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               );
             }).toList(),
           ),
@@ -479,164 +416,167 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCategoryButton({
-    required String name,
-    required Color color,
-    required Color borderColor,
-    required Color shadowColor,
-    required String emoji,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isSelected ? const Color(0xFF2E7B73) : borderColor,
-                width: isSelected ? 2.5 : 1.8,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: isSelected ? const Color(0xFF2E7B73) : shadowColor,
-                  offset: const Offset(0, 4),
-                  blurRadius: 0,
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                emoji,
-                style: const TextStyle(fontSize: 32),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            name,
-            style: GoogleFonts.fredoka(
-              fontSize: 14,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-              color: isSelected ? const Color(0xFF2E7B73) : const Color(0xFF2E2420),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // -------------------------------------------------------------
-  // D. Explore the Map — Main Featured Shortcut
-  // -------------------------------------------------------------
-  Widget _buildExploreMapCard(BuildContext context) {
+  // ---------------------------------------------------------------------------
+  // 4. Explore Cultural Map Banner
+  // ---------------------------------------------------------------------------
+  Widget _buildExploreMapBanner(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFF5A4D47), width: 2),
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.cardOutline, width: 1.8),
           boxShadow: const [
             BoxShadow(
-              color: Color(0xFFD6CBC3),
-              offset: Offset(0, 6),
+              color: AppColors.cardShadow,
+              offset: Offset(0, 5),
               blurRadius: 0,
             ),
           ],
         ),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title with decorative sparkles
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('✦', style: GoogleFonts.fredoka(color: const Color(0xFFFFD166), fontSize: 18)),
+                const Text('🗺️', style: TextStyle(fontSize: 20)),
                 const SizedBox(width: 8),
                 Text(
-                  'Explore the Map',
+                  'Explore Cultural Map',
                   style: GoogleFonts.fredoka(
-                    fontSize: 22,
+                    fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF2E2420),
+                    color: AppColors.darkBrown,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Text('✦', style: GoogleFonts.fredoka(color: const Color(0xFF85D5E5), fontSize: 18)),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.lightMint,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: AppColors.primaryTeal,
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Text(
+                    'Interactive',
+                    style: GoogleFonts.nunito(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primaryTeal,
+                    ),
+                  ),
+                ),
               ],
             ),
+            const SizedBox(height: 10),
 
-            const SizedBox(height: 14),
-
-            // Illustrated Cartoon Mini-Map Canvas
+            // Mini Map preview visual
             Container(
-              height: 160,
+              height: 110,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: const Color(0xFFDCF3E4), // Soft green landscape
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFF5A4D47), width: 1.8),
-              ),
-              child: ClipRRect(
+                color: const Color(0xFFDFF5E7),
                 borderRadius: BorderRadius.circular(14),
-                child: const _CartoonMiniMap(),
+                border: Border.all(color: AppColors.cardOutline, width: 1.4),
+              ),
+              child: Stack(
+                children: [
+                  // Stylized road canvas
+                  CustomPaint(
+                    size: Size.infinite,
+                    painter: _MiniMapRoadPainter(),
+                  ),
+                  // Cultural landmarks icons
+                  const Positioned(
+                    left: 30,
+                    top: 18,
+                    child: Text('🏠', style: TextStyle(fontSize: 18)),
+                  ),
+                  const Positioned(
+                    right: 35,
+                    top: 22,
+                    child: Text('🏛️', style: TextStyle(fontSize: 20)),
+                  ),
+                  const Positioned(
+                    left: 80,
+                    bottom: 16,
+                    child: Text('🍜', style: TextStyle(fontSize: 18)),
+                  ),
+                  const Positioned(
+                    right: 80,
+                    bottom: 20,
+                    child: Text('🎨', style: TextStyle(fontSize: 18)),
+                  ),
+
+                  // Central Smiling Pin Mascot
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.coral,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF9E4B3E),
+                          width: 1.6,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x30000000),
+                            blurRadius: 6,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Text('📍', style: TextStyle(fontSize: 20)),
+                    ),
+                  ),
+                ],
               ),
             ),
+            const SizedBox(height: 12),
 
-            const SizedBox(height: 16),
-
-            // Prominent "Explore Map →" Coral Button
-            GestureDetector(
-              onTap: () {
-                if (widget.onNavigateTab != null) {
-                  widget.onNavigateTab!(1); // Switch to Map tab
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Opening Interactive Map...')),
-                  );
-                }
-              },
-              child: Container(
-                width: double.infinity,
-                height: 52,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFF9583), Color(0xFFFF7B69)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+            // Explore Map Action Button
+            SizedBox(
+              width: double.infinity,
+              height: 46,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (widget.onNavigateTab != null) {
+                    widget.onNavigateTab!(1); // Switch to Map tab
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.coral,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: const BorderSide(
+                      color: Color(0xFF9E4B3E),
+                      width: 1.8,
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFFAC5E52), width: 2),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0xFFB15C4C),
-                      offset: Offset(0, 5),
-                      blurRadius: 0,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Explore Map →',
+                      style: GoogleFonts.fredoka(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
                   ],
-                ),
-                child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Explore Map →',
-                        style: GoogleFonts.fredoka(
-                          fontSize: 19,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ),
@@ -646,78 +586,146 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // -------------------------------------------------------------
-  // Mascot Cat Banner Decoration (from Frame 3)
-  // -------------------------------------------------------------
-  Widget _buildScrollTransitionMascot() {
+  // ---------------------------------------------------------------------------
+  // 5. Cultural Hunt Progress Teaser
+  // ---------------------------------------------------------------------------
+  Widget _buildCulturalHuntTeaser(
+    BuildContext context,
+    int collected,
+    int total,
+  ) {
+    final double progress = total > 0 ? (collected / total) : 0.0;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Row(
-        children: [
-          // Cute Cartoon Cat Mascot
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFEFE6),
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF5A4D47), width: 1.8),
-            ),
-            child: const Center(
-              child: Text('🐱', style: TextStyle(fontSize: 28)),
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Swirls and playful sparkles
-          Text('✦', style: GoogleFonts.fredoka(color: const Color(0xFFFFD166), fontSize: 18)),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Container(
-              height: 2,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF85D5E5), Color(0xFFFFB4A2), Colors.transparent],
-                ),
-                borderRadius: BorderRadius.circular(1),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GestureDetector(
+        onTap: () {
+          if (widget.onNavigateTab != null) {
+            widget.onNavigateTab!(2); // Switch to Hunt tab
+          }
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.lavender,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: AppColors.cardOutline, width: 1.6),
+            boxShadow: const [
+              BoxShadow(
+                color: AppColors.cardShadow,
+                offset: Offset(0, 3),
+                blurRadius: 0,
               ),
-            ),
+            ],
           ),
-          const SizedBox(width: 6),
-          Text('✦', style: GoogleFonts.fredoka(color: const Color(0xFFCBA9EB), fontSize: 16)),
-        ],
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              // Creature Icon Badge
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.cardOutline, width: 1.4),
+                ),
+                child: const Center(
+                  child: Text('🦜', style: TextStyle(fontSize: 22)),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Title and Progress Bar
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Cultural Hunt Progress',
+                          style: GoogleFonts.fredoka(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.darkBrown,
+                          ),
+                        ),
+                        Text(
+                          '$collected / $total Found',
+                          style: GoogleFonts.nunito(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.primaryTeal,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 7,
+                        backgroundColor: AppColors.white,
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppColors.primaryTeal,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.darkBrown,
+                size: 22,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  // -------------------------------------------------------------
-  // E. Featured Hidden Gems Section
-  // -------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // 6. Featured Hidden Gems
+  // ---------------------------------------------------------------------------
   Widget _buildFeaturedSection(BuildContext context) {
+    final gems = _filteredDiscoveries.take(4).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            'Featured Hidden Gems',
-            style: GoogleFonts.fredoka(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF2E2420),
-            ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Text(
+                'Featured Hidden Gems',
+                style: GoogleFonts.fredoka(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.darkBrown,
+                ),
+              ),
+              const SizedBox(width: 6),
+              const Text('✨', style: TextStyle(fontSize: 16)),
+            ],
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         SizedBox(
-          height: 236,
+          height: 232,
           child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
-            itemCount: _featuredGems.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 16),
+            itemCount: gems.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 14),
             itemBuilder: (context, index) {
-              final gem = _featuredGems[index];
+              final gem = gems[index];
               return _buildDiscoveryCard(context, gem);
             },
           ),
@@ -726,56 +734,60 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // -------------------------------------------------------------
-  // F. Recently Added Section
-  // -------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // 7. Recently Added Discoveries
+  // ---------------------------------------------------------------------------
   Widget _buildRecentlyAddedSection(BuildContext context) {
+    final recent = _filteredDiscoveries.reversed.take(4).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Recently Added',
                 style: GoogleFonts.fredoka(
-                  fontSize: 20,
+                  fontSize: 19,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF2E2420),
+                  color: AppColors.darkBrown,
                 ),
               ),
               GestureDetector(
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Showing all recently added discoveries')),
+                    const SnackBar(
+                      content: Text('Showing all community discoveries'),
+                    ),
                   );
                 },
                 child: Text(
                   'View All',
                   style: GoogleFonts.fredoka(
-                    fontSize: 14,
+                    fontSize: 13.5,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF40AA9F),
+                    color: AppColors.primaryTeal,
                   ),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         SizedBox(
-          height: 236,
+          height: 232,
           child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
-            itemCount: _recentlyAdded.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 16),
+            itemCount: recent.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 14),
             itemBuilder: (context, index) {
-              final item = _recentlyAdded[index];
-              return _buildDiscoveryCard(context, item);
+              final gem = recent[index];
+              return _buildDiscoveryCard(context, gem);
             },
           ),
         ),
@@ -783,27 +795,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Reusable Cultural Discovery Card (matching Frame 3)
-  Widget _buildDiscoveryCard(BuildContext context, DiscoveryItem item) {
+  // Discovery Card component
+  Widget _buildDiscoveryCard(BuildContext context, Discovery item) {
     return GestureDetector(
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Viewing: ${item.name} (${item.category})'),
-            duration: const Duration(seconds: 1),
-          ),
-        );
+        _showDiscoveryDetailSheet(context, item);
       },
       child: Container(
-        width: 172,
+        width: 175,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFF5A4D47), width: 1.8),
+          border: Border.all(color: AppColors.cardOutline, width: 1.6),
           boxShadow: const [
             BoxShadow(
-              color: Color(0xFFD6CBC3),
-              offset: Offset(0, 5),
+              color: AppColors.cardShadow,
+              offset: Offset(0, 4),
               blurRadius: 0,
             ),
           ],
@@ -811,98 +818,122 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Thumbnail container
+            // Thumbnail / Cultural Photo Header
             Container(
-              height: 110,
+              height: 104,
               width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF7F3EC),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              decoration: BoxDecoration(
+                color: item.category.color,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
               ),
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                child: item.illustration ??
-                    const Center(child: Text('📍', style: TextStyle(fontSize: 32))),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
+                child: item.imageUrl != null
+                    ? Image.network(
+                        item.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => Center(
+                          child: Text(
+                            item.category.emoji,
+                            style: const TextStyle(fontSize: 44),
+                          ),
+                        ),
+                      )
+                    : Center(
+                        child: Text(
+                          item.category.emoji,
+                          style: const TextStyle(fontSize: 44),
+                        ),
+                      ),
               ),
             ),
 
-            // Card content
+            // Card Body
             Padding(
               padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Discovery Name
                   Text(
-                    item.name,
+                    item.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.fredoka(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF2E2420),
+                      color: AppColors.darkBrown,
                     ),
                   ),
-
-                  const SizedBox(height: 3),
-
-                  // Category & Location
+                  const SizedBox(height: 2),
                   Row(
                     children: [
-                      const Icon(Icons.location_on_rounded, size: 12, color: Color(0xFF85756C)),
+                      const Icon(
+                        Icons.location_on_rounded,
+                        size: 12,
+                        color: AppColors.secondaryText,
+                      ),
                       const SizedBox(width: 2),
                       Expanded(
                         child: Text(
-                          '${item.category}, ${item.location}',
+                          item.location,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.nunito(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF85756C),
+                            color: AppColors.secondaryText,
                           ),
                         ),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 8),
 
-                  const SizedBox(height: 10),
-
-                  // Bottom row: "Approved" badge + arrow button
+                  // Bottom Row: Approved tag + arrow
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Approved Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFD4F6E6),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF56C9BB), width: 1.2),
+                          color: AppColors.approvedBadgeBg,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: AppColors.primaryTeal,
+                            width: 1,
+                          ),
                         ),
                         child: Text(
                           'Approved',
                           style: GoogleFonts.nunito(
-                            fontSize: 10,
+                            fontSize: 9.5,
                             fontWeight: FontWeight.w800,
-                            color: const Color(0xFF22786F),
+                            color: AppColors.approvedGreen,
                           ),
                         ),
                       ),
-
-                      // Arrow Button
                       Container(
-                        width: 26,
-                        height: 26,
+                        width: 24,
+                        height: 24,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF3FAF9),
+                          color: AppColors.background,
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFF5A4D47), width: 1.2),
+                          border: Border.all(
+                            color: AppColors.cardOutline,
+                            width: 1.2,
+                          ),
                         ),
                         child: const Icon(
                           Icons.arrow_forward_rounded,
-                          size: 14,
-                          color: Color(0xFF2E2420),
+                          size: 13,
+                          color: AppColors.darkBrown,
                         ),
                       ),
                     ],
@@ -915,329 +946,160 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
 
-// -------------------------------------------------------------
-// Cartoon Mini-Map Custom Vector Artwork
-// -------------------------------------------------------------
-class _CartoonMiniMap extends StatelessWidget {
-  const _CartoonMiniMap();
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Roads and pathways
-        CustomPaint(
-          size: Size.infinite,
-          painter: _RoadPainter(),
-        ),
-
-        // Houses and landmarks
-        const Positioned(
-          left: 45,
-          top: 35,
-          child: _HouseWidget(color: Color(0xFFFF9B85)),
-        ),
-        const Positioned(
-          left: 55,
-          bottom: 25,
-          child: _HouseWidget(color: Color(0xFFFFBE76)),
-        ),
-        const Positioned(
-          right: 38,
-          bottom: 20,
-          child: _TemplePagodaWidget(),
-        ),
-
-        // Trees
-        const Positioned(left: 18, top: 20, child: Text('🌳', style: TextStyle(fontSize: 16))),
-        const Positioned(left: 15, bottom: 40, child: Text('🌲', style: TextStyle(fontSize: 14))),
-        const Positioned(right: 25, top: 25, child: Text('🌳', style: TextStyle(fontSize: 16))),
-        const Positioned(right: 75, top: 45, child: Text('🌲', style: TextStyle(fontSize: 14))),
-
-        // Small location pin markers
-        const Positioned(
-          left: 28,
-          top: 48,
-          child: _SmallPin(color: Color(0xFFCBA9EB)), // Purple pin
-        ),
-        const Positioned(
-          right: 48,
-          top: 36,
-          child: _SmallPin(color: Color(0xFFFF8B7A)), // Salmon pin
-        ),
-
-        // Large smiling mascot pin in the center
-        Center(
-          child: Container(
-            width: 46,
-            height: 52,
-            decoration: const BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0x30000000),
-                  blurRadius: 6,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Base halo
-                Positioned(
-                  bottom: 0,
-                  child: Container(
-                    width: 32,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF69D9C8).withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+  void _showDiscoveryDetailSheet(BuildContext context, Discovery item) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.cardOutline.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                // Pin body
-                Positioned(
-                  top: 0,
-                  child: Container(
-                    width: 40,
-                    height: 44,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFB2A2),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFF8F3F34), width: 1.8),
+                      color: item.category.color,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: AppColors.cardOutline,
+                        width: 1.5,
+                      ),
                     ),
                     child: Center(
                       child: Text(
-                        '😊',
-                        style: const TextStyle(fontSize: 22),
+                        item.category.emoji,
+                        style: const TextStyle(fontSize: 26),
                       ),
                     ),
                   ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.title,
+                          style: GoogleFonts.fredoka(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.darkBrown,
+                          ),
+                        ),
+                        Text(
+                          '${item.category.label} • ${item.location}',
+                          style: GoogleFonts.nunito(
+                            fontSize: 13,
+                            color: AppColors.secondaryText,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Text(
+                item.description,
+                style: GoogleFonts.nunito(
+                  fontSize: 14,
+                  color: AppColors.darkBrown,
+                  height: 1.45,
+                ),
+              ),
+              if (item.culturalSignificance != null) ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.lightMint,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.primaryTeal,
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('💡', style: TextStyle(fontSize: 18)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          item.culturalSignificance!,
+                          style: GoogleFonts.nunito(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.darkBrown,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
-            ),
+              const SizedBox(height: 20),
+            ],
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
 
-class _RoadPainter extends CustomPainter {
+class _MiniMapRoadPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final roadPaint = Paint()
-      ..color = const Color(0xFFFFF6E5)
+      ..color = const Color(0xFFFFF7ED)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 24
+      ..strokeWidth = 20
       ..strokeCap = StrokeCap.round;
 
     final roadBorder = Paint()
       ..color = const Color(0xFFD6CBC3)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 27
+      ..strokeWidth = 23
       ..strokeCap = StrokeCap.round;
 
-    final dashPaint = Paint()
-      ..color = const Color(0xFFE8D7C8)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5
-      ..strokeCap = StrokeCap.round;
+    final path = Path()
+      ..moveTo(0, size.height * 0.45)
+      ..quadraticBezierTo(
+        size.width * 0.35,
+        size.height * 0.3,
+        size.width * 0.5,
+        size.height * 0.55,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.7,
+        size.height * 0.8,
+        size.width,
+        size.height * 0.65,
+      );
 
-    // Draw winding roads
-    final path1 = Path()
-      ..moveTo(0, size.height * 0.4)
-      ..quadraticBezierTo(size.width * 0.35, size.height * 0.45, size.width * 0.5, size.height * 0.6)
-      ..quadraticBezierTo(size.width * 0.7, size.height * 0.8, size.width, size.height * 0.75);
-
-    final path2 = Path()
-      ..moveTo(size.width * 0.4, 0)
-      ..quadraticBezierTo(size.width * 0.45, size.height * 0.4, size.width * 0.5, size.height * 0.6)
-      ..quadraticBezierTo(size.width * 0.55, size.height * 0.85, size.width * 0.5, size.height);
-
-    canvas.drawPath(path1, roadBorder);
-    canvas.drawPath(path2, roadBorder);
-    canvas.drawPath(path1, roadPaint);
-    canvas.drawPath(path2, roadPaint);
-
-    // Dotted center lines
-    canvas.drawPath(path1, dashPaint);
+    canvas.drawPath(path, roadBorder);
+    canvas.drawPath(path, roadPaint);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _HouseWidget extends StatelessWidget {
-  final Color color;
-  const _HouseWidget({required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 28,
-      height: 26,
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF7EE),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: const Color(0xFF5A4D47), width: 1.4),
-      ),
-      child: Column(
-        children: [
-          Container(
-            height: 9,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(2)),
-            ),
-          ),
-          const SizedBox(height: 3),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(width: 4, height: 4, color: const Color(0xFF85D5E5)),
-              const SizedBox(width: 4),
-              Container(width: 4, height: 4, color: const Color(0xFF85D5E5)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TemplePagodaWidget extends StatelessWidget {
-  const _TemplePagodaWidget();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 32,
-      height: 30,
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF0D1),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: const Color(0xFF5A4D47), width: 1.4),
-      ),
-      child: Center(
-        child: Text('🏯', style: const TextStyle(fontSize: 16)),
-      ),
-    );
-  }
-}
-
-class _SmallPin extends StatelessWidget {
-  final Color color;
-  const _SmallPin({required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 18,
-      height: 18,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFF5A4D47), width: 1.4),
-      ),
-      child: const Center(
-        child: Icon(Icons.circle, color: Colors.white, size: 6),
-      ),
-    );
-  }
-}
-
-// -------------------------------------------------------------
-// Discovery Card Illustration Placeholders
-// -------------------------------------------------------------
-class _HeritageLaneIllustration extends StatelessWidget {
-  const _HeritageLaneIllustration();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFFFFF1E0),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned(bottom: 0, left: 0, right: 0, child: Container(height: 24, color: const Color(0xFFEADBC8))),
-          Positioned(left: 12, bottom: 10, child: Text('🏠', style: const TextStyle(fontSize: 32))),
-          Positioned(right: 12, bottom: 10, child: Text('🏮', style: const TextStyle(fontSize: 28))),
-          Positioned(top: 10, child: Text('🏮 Sibu Heritage 🏮', style: GoogleFonts.fredoka(fontSize: 10, color: const Color(0xFF8C5543), fontWeight: FontWeight.bold))),
-        ],
-      ),
-    );
-  }
-}
-
-class _CraftCornerIllustration extends StatelessWidget {
-  const _CraftCornerIllustration();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFFFFF6D6),
-      child: Center(
-        child: Text('🧺', style: const TextStyle(fontSize: 48)),
-      ),
-    );
-  }
-}
-
-class _TempleIllustration extends StatelessWidget {
-  const _TempleIllustration();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFFFFECE5),
-      child: Center(
-        child: Text('🏯', style: const TextStyle(fontSize: 48)),
-      ),
-    );
-  }
-}
-
-class _LaksaIllustration extends StatelessWidget {
-  const _LaksaIllustration();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFFFFECE5),
-      child: Center(
-        child: Text('🍜', style: const TextStyle(fontSize: 48)),
-      ),
-    );
-  }
-}
-
-class _MuralIllustration extends StatelessWidget {
-  const _MuralIllustration();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFFE8F7FF),
-      child: Center(
-        child: Text('🎨', style: const TextStyle(fontSize: 48)),
-      ),
-    );
-  }
-}
-
-class _KompiaIllustration extends StatelessWidget {
-  const _KompiaIllustration();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFFFFF2D9),
-      child: Center(
-        child: Text('🥟', style: const TextStyle(fontSize: 48)),
-      ),
-    );
-  }
 }

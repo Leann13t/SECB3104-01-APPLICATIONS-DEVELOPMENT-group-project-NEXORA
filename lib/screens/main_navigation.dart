@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'home/home_screen.dart';
 import 'map/map_screen.dart';
 import 'hunt/hunt_screen.dart';
@@ -27,46 +28,46 @@ class _MainNavigationState extends State<MainNavigation> {
     final screens = [
       HomeScreen(onNavigateTab: _onSelectTab),
       const MapScreen(),
-      const HuntScreen(),
-      const UploadScreen(),
-      const ProfileScreen(),
+      HuntScreen(onNavigateTab: _onSelectTab),
+      UploadScreen(onSubmissionSuccess: () => _onSelectTab(4)),
+      ProfileScreen(onNavigateTab: _onSelectTab),
     ];
 
     return Scaffold(
-      extendBody: true, // Allows the body content to scroll behind the floating nav bar
-      body: IndexedStack(
-        index: _currentIndex,
-        children: screens,
+      extendBody: true, // Allows body content to scroll behind floating nav bar
+      body: IndexedStack(index: _currentIndex, children: screens),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        minimum: const EdgeInsets.only(bottom: 8),
+        child: _buildFloatingBottomNavBar(),
       ),
-      bottomNavigationBar: _buildFloatingBottomNavBar(),
     );
   }
 
-  // Fixed floating-style bottom navigation bar with 5 items (Section 2.G)
+  // Floating pill bottom navigation bar with responsive flex distribution
   Widget _buildFloatingBottomNavBar() {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      height: 70,
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 8),
+      height: 66,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(35),
-        border: Border.all(color: const Color(0xFF5A4D47), width: 2),
+        borderRadius: BorderRadius.circular(33),
+        border: Border.all(color: const Color(0xFF5A4D47), width: 1.8),
         boxShadow: const [
           BoxShadow(
             color: Color(0x1E000000),
-            offset: Offset(0, 8),
-            blurRadius: 18,
+            offset: Offset(0, 6),
+            blurRadius: 16,
           ),
           BoxShadow(
             color: Color(0xFFD6CBC3),
-            offset: Offset(0, 5),
+            offset: Offset(0, 4),
             blurRadius: 0,
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildNavItem(
             index: 0,
@@ -117,48 +118,56 @@ class _MainNavigationState extends State<MainNavigation> {
   }) {
     final isSelected = _currentIndex == index;
 
-    return GestureDetector(
-      onTap: () => _onSelectTab(index),
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutBack,
-        padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 12 : 8,
-          vertical: 4,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected ? activeHighlightColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: isSelected
-              ? Border.all(color: activeBorderColor, width: 1.5)
-              : null,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              iconPath,
-              width: isSelected ? 26 : 24,
-              height: isSelected ? 26 : 24,
-              fit: BoxFit.contain,
-              errorBuilder: (_, _, _) => Icon(
-                _getFallbackIcon(index),
-                size: 22,
-                color: isSelected ? const Color(0xFF2E2420) : const Color(0xFF85756C),
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => _onSelectTab(index),
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          margin: const EdgeInsets.symmetric(horizontal: 2),
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          decoration: BoxDecoration(
+            color: isSelected ? activeHighlightColor : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+            border: isSelected
+                ? Border.all(color: activeBorderColor, width: 1.4)
+                : null,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                iconPath,
+                width: 22,
+                height: 22,
+                fit: BoxFit.contain,
+                errorBuilder: (_, _, _) => Icon(
+                  _getFallbackIcon(index),
+                  size: 20,
+                  color: isSelected
+                      ? const Color(0xFF2E2420)
+                      : const Color(0xFF85756C),
+                ),
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: GoogleFonts.fredoka(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                color: isSelected ? const Color(0xFF2E2420) : const Color(0xFF6B5E57),
+              const SizedBox(height: 2),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  style: GoogleFonts.fredoka(
+                    fontSize: 10.5,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                    color: isSelected
+                        ? const Color(0xFF2E2420)
+                        : const Color(0xFF6B5E57),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
