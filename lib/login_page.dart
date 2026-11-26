@@ -527,12 +527,16 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
         const SizedBox(height: 6),
+
         Container(
           height: 48,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFF90BFCE), width: 1.8),
+            border: Border.all(
+              color: const Color(0xFF90BFCE),
+              width: 1.8,
+            ),
             boxShadow: const [
               BoxShadow(
                 color: Color(0xFFC9E6ED),
@@ -544,8 +548,15 @@ class _LoginPageState extends State<LoginPage> {
           child: Row(
             children: [
               const SizedBox(width: 12),
-              Icon(icon, size: 18, color: const Color(0xFF7A6F68)),
+
+              Icon(
+                icon,
+                size: 18,
+                color: const Color(0xFF7A6F68),
+              ),
+
               const SizedBox(width: 10),
+
               Expanded(
                 child: TextField(
                   controller: controller,
@@ -563,11 +574,20 @@ class _LoginPageState extends State<LoginPage> {
                       fontSize: 13,
                     ),
                     border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                    filled: false,
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                    ),
                   ),
                 ),
               ),
+
               if (isPassword && onToggleVisibility != null)
                 IconButton(
                   icon: Icon(
@@ -587,4 +607,5 @@ class _LoginPageState extends State<LoginPage> {
       ],
     );
   }
+
 }
