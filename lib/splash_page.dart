@@ -41,21 +41,6 @@ class SplashPage extends StatelessWidget {
                         children: [
                           const Spacer(flex: 1),
 
-                          // Decorative top sparkler
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text(
-                                '✦',
-                                style: GoogleFonts.fredoka(
-                                  color: const Color(0xFFF2C66D),
-                                  fontSize: 24,
-                                ),
-                              ),
-                              const SizedBox(width: 20),
-                            ],
-                          ),
-
                           // App Mascot / Logo
                           Center(
                             child: SizedBox(
